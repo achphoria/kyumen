@@ -1,5 +1,15 @@
 # Changelog
 
+## Tahap 2: kru kedai, tangga, tebing, dan lebih ringan
+
+- Karakter dirombak total: agent AI, Ryu, dan avatar staff kini kru kedai ramen chibi (happi, celemek, baju koki, jinbei, kimono; hachimaki, tenugui, topi koki). Agent AI bermata biru menyala; Ryu berhaori navy dengan naga biru kecil (maskot) di bahu.
+- Pembuat avatar baru: pratinjau 3D, pilihan seragam/penutup kepala/barang di tangan, 6 joget festival (Bon Odori, Soran Bushi, Tumbuk Mochi, Seruput Ramen, Kanpai, Banzai). Avatar lama dipetakan otomatis.
+- Lift dihapus: agent berjalan kaki lewat pintu antar-ruangan, teras barat, dan dua tangga luar; jembatan kayu ke Central Kitchen & Main Warehouse. Denah baru: Papan Misi & Ruang Server di lantai 2, Engawa (teras) di lantai 1.
+- Papan nama pindah dari atap ke pojok dermaga.
+- Daratan jadi tebing berbatu tinggi di atas laut, tepi laut ditutup awan/kabut.
+- Mode TV hanya berkeliling kantor (orbit, tur lantai, geser menyusuri dermaga).
+- Performa: dinding shoji bertekstur (1 mesh per bidang), detail wajah karakter hanya saat kamera dekat, bagian statis digabung, MSAA pasca-proses dimatikan, bayangan diperbarui 3x per detik.
+
 ## Tahap 1: fork dari Hive Colony, rebrand Kyumen
 
 - Kode diambil dari Hive Colony (kantor virtual 3D + agent AI), lalu diganti total ke brand **Kyuka Ramen Virtual**.

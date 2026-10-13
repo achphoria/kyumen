@@ -1,9 +1,9 @@
-// Naga statis untuk Ruang Tatami: duduk di meja rapat, bergerak dan menyala saat bicara.
+// Kru statis untuk Ruang Tatami: duduk di meja rapat, bergerak dan menyala saat bicara.
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Billboard } from '@react-three/drei';
 import { RyuModel } from './QueenBea';
-import { DragonBody } from './Dragon';
+import { CrewBody } from './Crew';
 import { M, std, Box, Cyl, Sph, Cone } from './materials';
 
 export function SpeakRing({ active, color = '#E5483B' }) {
@@ -67,36 +67,34 @@ function ThinkDots({ active }) {
   );
 }
 
+const LOOKS = {};
+function lookFor(vest) {
+  if (!LOOKS[vest]) LOOKS[vest] = { skin: '#F1C27D', hair: 'short', hairColor: '#2B2B2E', outfit: 'happi', outfitColor: vest || '#22324F', headwear: 'hachimaki', expr: 'happy' };
+  return LOOKS[vest];
+}
+
 export function BeeFigure({ position, facing = 0, crown = false, muted = false, speaking = false, thinking = false, vest = null }) {
   const inner = useRef();
   const head = useRef();
-  const wl = useRef();
-  const wr = useRef();
   const al = useRef();
   const ar = useRef();
+  const dragon = useRef();
   const off = useMemo(() => Math.random() * 10, []);
   useFrame((st) => {
     const t = st.clock.elapsedTime + off;
     if (!inner.current) return;
-    inner.current.position.y = speaking ? Math.abs(Math.sin(t * 8)) * 0.06 : Math.sin(t * 1.6) * 0.02;
+    inner.current.position.y = speaking ? Math.abs(Math.sin(t * 8)) * 0.05 : Math.sin(t * 1.6) * 0.015;
     head.current.rotation.y = speaking ? Math.sin(t * 2.2) * 0.25 : Math.sin(t * 0.5) * 0.12;
     head.current.rotation.z = thinking ? 0.18 : 0;
-    const flap = speaking ? Math.sin(t * 30) * 0.5 : Math.sin(t * 4) * 0.12;
-    wl.current.rotation.z = -(0.45 + flap);
-    wr.current.rotation.z = 0.45 + flap;
     al.current.rotation.x = speaking ? Math.sin(t * 4) * 0.5 - 0.6 : thinking ? -1.9 : -0.25;
     ar.current.rotation.x = speaking ? Math.sin(t * 4 + 1.5) * 0.3 - 0.3 : -0.25;
+    if (dragon.current) dragon.current.position.y = Math.sin(t * 2.2) * 0.06;
   });
+  const refs = { head, al, ar, dragon };
   return (
     <group position={position} rotation={[0, facing, 0]}>
       <SpeakRing active={speaking} />
-      <group ref={inner}>
-        {crown ? (
-          <RyuModel refs={{ head, wl, wr, al, ar }} thinking={thinking} />
-        ) : (
-          <DragonBody refs={{ head, wl, wr, al, ar }} thinking={thinking} vest={vest} />
-        )}
-      </group>
+      <group ref={inner}>{crown ? <RyuModel refs={refs} thinking={thinking} /> : <CrewBody refs={refs} look={lookFor(vest)} ai />}</group>
       {muted && (
         <Billboard position={[0.45, 1.75, 0]}>
           <mesh material={M.mute}>
@@ -105,7 +103,7 @@ export function BeeFigure({ position, facing = 0, crown = false, muted = false, 
           <Box p={[0, 0, 0.01]} r={[0, 0, Math.PI / 4]} s={[0.2, 0.035, 0.01]} m={M.white} shadow={false} />
         </Billboard>
       )}
-      <group position={[0, crown ? 0.45 : 0, 0]}>
+      <group position={[0, crown ? 0.3 : 0, 0]}>
         <ThinkDots active={thinking} />
         <SoundBars active={speaking} />
       </group>

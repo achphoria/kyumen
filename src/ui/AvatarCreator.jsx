@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DEPTS, DEPT_ORDER as ALL_DEPTS } from '../data/hive';
-import { AVATAR_OPTIONS, DEFAULT_PROFILE, POSES, saveProfile } from '../data/staff';
+import { AVATAR_OPTIONS, DEFAULT_PROFILE, DEFAULT_POSE, POSES, normalizeProfile, saveProfile } from '../data/staff';
 import { useHive } from '../sim/store';
 import { upsertWalker, danceNow } from '../sim/outdoor';
 import { AvatarPreview } from './AvatarPreview';
@@ -43,8 +43,8 @@ export function AvatarCreator() {
   const saved = useHive((s) => s.profile);
   const account = useAuth((s) => s.account);
   const saveAvatar = useAuth((s) => s.saveAvatar);
-  const [p, setP] = useState(saved || DEFAULT_PROFILE);
-  const [preview, setPreview] = useState(saved?.pose || 'pargoy');
+  const [p, setP] = useState(() => normalizeProfile(saved || DEFAULT_PROFILE));
+  const [preview, setPreview] = useState(() => normalizeProfile(saved).pose);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const set = (k) => (v) => setP((old) => ({ ...old, [k]: v }));
@@ -55,7 +55,7 @@ export function AvatarCreator() {
       setError('Isi nama dulu supaya teman kantor tahu ini kamu.');
       return;
     }
-    const pose = p.pose === 'idle' ? 'pargoy' : p.pose;
+    const pose = p.pose === 'idle' ? DEFAULT_POSE : p.pose;
     if (account) {
       // akun sungguhan: disimpan ke Supabase, divisi tetap dari undangan
       setBusy(true);
@@ -167,20 +167,24 @@ export function AvatarCreator() {
               <Swatches field="skin" value={p.skin} onPick={set('skin')} />
             </div>
             <div className="field">
-              <div className="field-label">Pakaian</div>
+              <div className="field-label">Seragam kedai</div>
               <Chips field="outfit" value={p.outfit} onPick={set('outfit')} />
             </div>
             <div className="field">
-              <div className="field-label">Warna pakaian</div>
+              <div className="field-label">Warna seragam</div>
               <Swatches field="outfitColor" value={p.outfitColor} onPick={set('outfitColor')} />
             </div>
             <div className="field">
-              <div className="field-label">Aksesoris</div>
-              <Chips field="acc" value={p.acc} onPick={set('acc')} />
+              <div className="field-label">Penutup kepala</div>
+              <Chips field="headwear" value={p.headwear} onPick={set('headwear')} />
             </div>
             <div className="field">
-              <div className="field-label">Tato</div>
-              <Chips field="tattoo" value={p.tattoo} onPick={set('tattoo')} />
+              <div className="field-label">Di tangan</div>
+              <Chips field="hand" value={p.hand} onPick={set('hand')} />
+            </div>
+            <div className="field">
+              <div className="field-label">Aksesori wajah</div>
+              <Chips field="extra" value={p.extra} onPick={set('extra')} />
             </div>
             <div className="field">
               <div className="field-label">Ekspresi</div>

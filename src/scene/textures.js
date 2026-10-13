@@ -161,3 +161,34 @@ export const grassTexture = () =>
       g.fillRect(r() * n, r() * n, 2, 3 + r() * 4);
     }
   }, { repeat: 10 });
+
+// Panel shoji: kertas krem bercahaya dengan kisi kayu gelap (kumiko) dan papan kayu di bagian bawah.
+// Satu panel = 1,5 unit lebar; ulangi sesuai panjang dinding (lihat shojiMaterial di Room.jsx).
+export const shojiTexture = () =>
+  make('shoji', 256, (g, n) => {
+    g.fillStyle = '#FFF6E8';
+    g.fillRect(0, 0, n, n);
+    // serat kertas tipis
+    const r = rng(5);
+    g.strokeStyle = 'rgba(200,170,120,0.08)';
+    for (let i = 0; i < 40; i++) {
+      g.beginPath();
+      const y = r() * n;
+      g.moveTo(0, y);
+      g.lineTo(n, y + (r() - 0.5) * 8);
+      g.stroke();
+    }
+    g.fillStyle = '#4A3524';
+    const base = n * 0.2;
+    g.fillRect(0, n - base, n, base); // papan bawah (koshi-ita)
+    g.fillStyle = '#5E4430';
+    g.fillRect(0, n - base + 6, n, 3);
+    g.fillStyle = '#4A3524';
+    const f = 12;
+    g.fillRect(0, 0, f, n);
+    g.fillRect(n - f, 0, f, n);
+    g.fillRect(0, 0, n, f);
+    g.fillRect(0, n - base - f / 2, n, f);
+    for (let i = 1; i < 3; i++) g.fillRect((i * n) / 3 - 2.5, 0, 5, n - base);
+    for (let i = 1; i < 4; i++) g.fillRect(0, (i * (n - base)) / 4 - 2.5, n, 5);
+  });

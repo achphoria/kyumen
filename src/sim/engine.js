@@ -1,4 +1,4 @@
-// Mesin simulasi: jam siang-malam, pergerakan agent, istirahat, tidur, rapat, tamu lobby, dan alur misi.
+// Mesin simulasi: jam siang-malam, agent berjalan kaki (pintu & tangga), istirahat, tidur, rapat, tamu, dan alur misi.
 // State per-frame disimpan di objek `world` (mutable) supaya React tidak re-render tiap frame;
 // ringkasan untuk UI dikirim ke store beberapa kali per detik.
 import * as THREE from 'three';
@@ -9,7 +9,7 @@ import {
   MISSIONS,
   DEPTS,
   AGENT_BY_ID,
-  LIFT_X,
+  walkRoute,
   DAY_LEN,
   NIGHT_SHIFT,
   GUESTS,
@@ -22,8 +22,7 @@ import {
 import { useHive } from './store';
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
-const CRUISE = 2.7;
-const SPEED = 4.4;
+const SPEED = 3.2; // kecepatan jalan agent (tidak terbang)
 const WALK = 2.3;
 const MAX_ACTIVE = 5;
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -120,18 +119,9 @@ function seatDest(a) {
   return { pos: V(...a.seat.seat), tier: ROOM_BY_ID[a.seat.roomId].tier, facing: a.seat.facing, roomId: a.seat.roomId };
 }
 
-function makePath(from, fromTier, to, toTier, lane = 0) {
-  const cf = tierY(fromTier) + CRUISE;
-  const ct = tierY(toTier) + CRUISE;
-  const pts = [from.clone(), V(from.x, cf, from.z)];
-  if (fromTier !== toTier) {
-    // tiap agent punya jalur sendiri di dalam tabung lift supaya tidak menumpuk
-    const lx = LIFT_X + Math.cos(lane) * 0.65;
-    const lz = Math.sin(lane) * 0.65;
-    pts.push(V(lx, cf, lz), V(lx, ct, lz));
-  }
-  pts.push(V(to.x, ct, to.z), to.clone());
-  return pts;
+// rute jalan kaki lewat pintu, teras, tangga luar, dan jembatan (lihat walkRoute di data/hive.js)
+function makePath(from, to) {
+  return [from.clone(), ...walkRoute(from, to).map((p) => V(...p))];
 }
 
 function sendTo(a, dest, arriveState, duration = 0) {
@@ -150,7 +140,7 @@ function sendTo(a, dest, arriveState, duration = 0) {
     arrive(a);
     return;
   }
-  a.path = makePath(a.pos, tierOf(a.pos.y), dest.pos, dest.tier, a.lane);
+  a.path = makePath(a.pos, dest.pos);
   a.pathIdx = 1;
   a.speed = SPEED;
   a.state = 'fly';

@@ -402,3 +402,12 @@
   font-weight: 700;
   font-size: 14px;
 }
+
+/* pratinjau avatar 3D (kru kedai) */
+.avp3d {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  max-height: 380px;
+  border-radius: 18px;
+  background: radial-gradient(circle at 50% 35%, #fffbf5 0%, #f4ebdd 70%);
+}

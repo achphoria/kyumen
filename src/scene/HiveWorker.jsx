@@ -1,142 +1,28 @@
-// Karakter kru Kyumen: naga biru chibi berompi happi warna divisi, aksesori berbeda per divisi/peran.
+// Agent AI di kedai 3D: kru kedai ramen chibi (happi/celemek/baju koki warna divisi, penutup kepala per peran).
+// Agent berjalan kaki lewat pintu & tangga (tidak terbang). Ryu memakai model khusus (QueenBea.jsx).
 import { useMemo, useRef, useState } from 'react';
+import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Html, Billboard } from '@react-three/drei';
-import { DEPTS, SKINS, agentAcc, tierOf, statusText } from '../data/hive';
+import { AGENTS, DEPTS, tierOf, statusText } from '../data/hive';
 import { useHive } from '../sim/store';
 import { world, focusAgent } from '../sim/engine';
-import { M, std, Box, Cyl, Sph, Cone } from './materials';
+import { M, std } from './materials';
 import { RyuModel } from './QueenBea';
-import { DragonBody } from './Dragon';
+import { CrewBody, agentLook, updateCrewLod } from './Crew';
 
-const BUBBLE = { mission: '#FF8C1A', break: '#9BD36A', charge: '#9EC9FF', meeting: '#FFF8E7' };
+const BUBBLE = { mission: '#E5483B', break: '#9BD36A', charge: '#9EC9FF', meeting: '#F4EBDD' };
+const bubbleGeo = new THREE.OctahedronGeometry(0.12, 0);
+const ringGeo = new THREE.TorusGeometry(0.6, 0.045, 6, 24);
+const zGeo = new THREE.BoxGeometry(0.22, 0.04, 0.02);
 
-function Accessory({ type }) {
-  switch (type) {
-    case 'crown':
-      return (
-        <group position={[0, 0.42, 0]}>
-          <Cyl p={[0, 0, 0]} a={[0.2, 0.23, 0.12, 6]} m={M.led} />
-          {[0, 1, 2, 3, 4].map((i) => {
-            const a = (i / 5) * Math.PI * 2;
-            return <Cone key={i} p={[0.18 * Math.cos(a), 0.12, 0.18 * Math.sin(a)]} a={[0.05, 0.14, 4]} m={M.gold} />;
-          })}
-        </group>
-      );
-    case 'hachimaki':
-      return (
-        <group position={[0, 0.16, 0]}>
-          <mesh rotation={[Math.PI / 2 - 0.12, 0, 0]} material={M.white} castShadow>
-            <torusGeometry args={[0.43, 0.045, 6, 22]} />
-          </mesh>
-          <mesh position={[0, 0.05, 0.43]} material={M.amber}>
-            <circleGeometry args={[0.06, 16]} />
-          </mesh>
-          {[-1, 1].map((sx) => (
-            <Box key={sx} p={[sx * 0.07, -0.05, -0.45]} r={[0.3, 0, sx * 0.5]} s={[0.05, 0.18, 0.02]} m={M.white} />
-          ))}
-        </group>
-      );
-    case 'chefhat':
-      return (
-        <group position={[0, 0.36, -0.02]}>
-          <Cyl a={[0.27, 0.27, 0.16, 16]} m={M.white} />
-          <Sph p={[0, 0.2, 0]} rad={0.25} sc={[1.15, 0.9, 1.15]} m={M.white} seg={[12, 10]} />
-          {[-1, 1].map((sx) => (
-            <Sph key={sx} p={[sx * 0.15, 0.17, 0]} rad={0.17} m={M.white} seg={[10, 8]} />
-          ))}
-        </group>
-      );
-    case 'headset':
-      return (
-        <group>
-          <mesh material={M.graphite}>
-            <torusGeometry args={[0.45, 0.035, 6, 16, Math.PI]} />
-          </mesh>
-          <Cyl p={[0.45, 0, 0]} r={[0, 0, Math.PI / 2]} a={[0.11, 0.11, 0.09, 10]} m={M.graphite} />
-          <Cyl p={[-0.45, 0, 0]} r={[0, 0, Math.PI / 2]} a={[0.11, 0.11, 0.09, 10]} m={M.graphite} />
-          <Box p={[0.38, -0.14, 0.2]} r={[0, -0.9, 0]} s={[0.03, 0.03, 0.3]} m={M.graphite} />
-          <Sph p={[0.27, -0.16, 0.33]} rad={0.045} m={M.amber} />
-        </group>
-      );
-    case 'hardhat':
-      return (
-        <group position={[0, 0.12, 0]}>
-          <mesh material={M.amber} castShadow>
-            <sphereGeometry args={[0.46, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
-          </mesh>
-          <Cyl p={[0, 0.01, 0.06]} a={[0.52, 0.52, 0.04, 16]} m={M.amber} />
-          <Box p={[0, 0.3, 0]} s={[0.08, 0.2, 0.7]} m={M.gold} />
-        </group>
-      );
-    case 'glasses':
-      return (
-        <group position={[0, 0.06, 0.43]}>
-          {[-0.17, 0.17].map((x) => (
-            <mesh key={x} position={[x, 0, 0]} material={M.graphite}>
-              <torusGeometry args={[0.1, 0.017, 6, 14]} />
-            </mesh>
-          ))}
-          <Box p={[0, 0.01, 0]} s={[0.14, 0.02, 0.02]} m={M.graphite} />
-        </group>
-      );
-    case 'beret':
-      return (
-        <group position={[0.07, 0.4, -0.02]} rotation={[0, 0, -0.3]}>
-          <Cyl a={[0.33, 0.37, 0.1, 14]} m={M.graphite} />
-          <Cyl p={[0, 0.08, 0]} a={[0.025, 0.025, 0.08, 6]} m={M.graphite} />
-        </group>
-      );
-    case 'goggles':
-      return (
-        <group position={[0, 0.17, 0]}>
-          <mesh rotation={[Math.PI / 2, 0, 0]} material={M.brown}>
-            <torusGeometry args={[0.445, 0.03, 6, 20]} />
-          </mesh>
-          {[-0.14, 0.14].map((x) => (
-            <Cyl key={x} p={[x, 0.02, 0.41]} r={[Math.PI / 2 - 0.3, 0, 0]} a={[0.09, 0.09, 0.07, 10]} m={M.honey} />
-          ))}
-        </group>
-      );
-    default:
-      return null;
-  }
-}
-
-function BodyAccessory({ type }) {
-  if (type === 'bowtie')
-    return (
-      <group position={[0, 0.7, 0.3]}>
-        <Cone p={[-0.08, 0, 0]} r={[0, 0, Math.PI / 2]} a={[0.06, 0.13, 4]} m={M.graphite} />
-        <Cone p={[0.08, 0, 0]} r={[0, 0, -Math.PI / 2]} a={[0.06, 0.13, 4]} m={M.graphite} />
-        <Sph rad={0.035} m={M.gold} />
-      </group>
-    );
-  if (type === 'scarf')
-    return (
-      <group position={[0, 0.72, 0]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]} material={M.cream} castShadow>
-          <torusGeometry args={[0.28, 0.07, 8, 16]} />
-        </mesh>
-        <Box p={[0.12, -0.18, 0.27]} r={[0.15, 0, 0.1]} s={[0.12, 0.3, 0.05]} m={M.cream} />
-      </group>
-    );
-  return null;
-}
-
-// Huruf "Z" dari tiga balok untuk agent yang tidur
-function ZMark({ zRef, size = 1 }) {
+// Huruf "Z" untuk agent yang tidur
+function ZMark({ zRef }) {
   return (
-    <group ref={zRef} scale={size}>
-      <mesh position={[0, 0.09, 0]} material={M.zzz}>
-        <boxGeometry args={[0.2, 0.04, 0.02]} />
-      </mesh>
-      <mesh rotation={[0, 0, Math.PI / 4 + 0.2]} material={M.zzz}>
-        <boxGeometry args={[0.26, 0.04, 0.02]} />
-      </mesh>
-      <mesh position={[0, -0.09, 0]} material={M.zzz}>
-        <boxGeometry args={[0.2, 0.04, 0.02]} />
-      </mesh>
+    <group ref={zRef}>
+      <mesh geometry={zGeo} material={M.zzz} position={[0, 0.09, 0]} />
+      <mesh geometry={zGeo} material={M.zzz} rotation={[0, 0, Math.PI / 4 + 0.2]} />
+      <mesh geometry={zGeo} material={M.zzz} position={[0, -0.09, 0]} />
     </group>
   );
 }
@@ -153,15 +39,9 @@ function AgentTag({ def }) {
 
 export function KyuWorker({ def }) {
   const g = useRef();
-  const inner = useRef();
-  const head = useRef();
-  const wl = useRef();
-  const wr = useRef();
-  const al = useRef();
-  const ar = useRef();
-  const eyes = useRef();
+  const refs = { body: useRef(), head: useRef(), al: useRef(), ar: useRef(), ll: useRef(), lr: useRef(), eyes: useRef(), dragon: useRef(), detail: useRef(), item: useRef() };
   const bubble = useRef();
-  const bubbleMat = useMemo(() => std('#FF8C1A', { emissive: '#FF8C1A', emissiveIntensity: 0.5 }), []);
+  const bubbleMat = useMemo(() => std('#E5483B', { emissive: '#E5483B', emissiveIntensity: 0.5 }), []);
   const ring = useRef();
   const zzz = useRef();
   const z1 = useRef();
@@ -170,10 +50,9 @@ export function KyuWorker({ def }) {
   const selected = useHive((s) => s.selectedAgent === def.id);
   const off = useMemo(() => Math.random() * 10, []);
   const blink = useRef(2 + Math.random() * 4);
-  const mats = useMemo(() => ({ skin: def.guest ? std('#9FB4C8', { roughness: 0.5 }) : std(SKINS[def.skin], { roughness: 0.45 }) }), [def.skin, def.guest]);
-  const acc = agentAcc(def);
-  const queen = def.id === 'ceo'; // Ryu punya model sendiri yang lebih besar
-  const topY = queen ? 2.6 : 2.15;
+  const queen = def.id === 'ceo';
+  const look = useMemo(() => agentLook(def, DEPTS[def.dept]?.color || '#22324F', AGENTS.findIndex((a) => a.id === def.id)), [def]);
+  const topY = queen ? 2.25 : 2.0;
 
   useFrame((st, dt) => {
     const a = world.byId[def.id];
@@ -183,6 +62,7 @@ export function KyuWorker({ def }) {
     g.current.visible = visible;
     if (!visible) return;
     g.current.position.copy(a.pos);
+    updateCrewLod(refs, g.current, st.camera);
     let d = a.targetFacing - g.current.rotation.y;
     d = Math.atan2(Math.sin(d), Math.cos(d));
     g.current.rotation.y += d * Math.min(1, dt * 8);
@@ -192,71 +72,74 @@ export function KyuWorker({ def }) {
     const gym = s === 'break' && a.roomId === 'gym';
     let bob = 0;
     let tilt = 0;
-    let flap = Math.sin(t * 5) * 0.12;
     let armL = 0;
     let armR = 0;
+    let legL = 0;
+    let legR = 0;
     let turn = 0;
     let roll = 0;
-    if (s === 'walk') {
-      bob = Math.abs(Math.sin(t * 8)) * 0.06;
-      armL = Math.sin(t * 8) * 0.6;
+    if (s === 'walk' || s === 'fly') {
+      const k = Math.sin(t * 9);
+      bob = Math.abs(k) * 0.05;
+      armL = k * 0.6;
       armR = -armL;
+      legL = -k * 0.55;
+      legR = -legL;
     } else if (s === 'idle') {
       turn = Math.sin(t * 0.8) * 0.4;
       armR = Math.sin(t * 5) * 0.3 - 1.4;
     } else if (s === 'sleep') {
       bob = Math.sin(t * 1.2) * 0.02;
-      tilt = 0.18;
-      roll = 0.28;
-      flap = 0;
+      tilt = 0.12;
+      roll = 0.3;
       armL = armR = 0.1;
-    } else if (s === 'fly') {
-      bob = 0.2 + Math.sin(t * 7) * 0.08;
-      tilt = 0.28;
-      flap = Math.sin(t * 40) * 0.7;
-      armL = armR = -0.5;
     } else if (s === 'desk') {
-      bob = Math.abs(Math.sin(t * 2)) * 0.02;
-      armL = Math.sin(t * 16) * 0.15 - 0.9;
-      armR = Math.sin(t * 16 + 1.6) * 0.15 - 0.9;
+      bob = Math.abs(Math.sin(t * 2)) * 0.015;
+      armL = Math.sin(t * 16) * 0.12 - 0.9;
+      armR = Math.sin(t * 16 + 1.6) * 0.12 - 0.9;
       turn = Math.sin(t * 0.6) * 0.15;
     } else if (s === 'meeting' || s === 'visit') {
       turn = Math.sin(t * 0.9) * 0.35;
       armL = Math.sin(t * 3) * 0.4 - 0.3;
       armR = -0.2;
     } else if (gym) {
-      bob = Math.abs(Math.sin(t * 4)) * 0.35;
-      armL = Math.sin(t * 8) * 1.2;
-      armR = -armL;
+      // latihan di dojo: memotong/mengaduk dengan semangat
+      bob = Math.abs(Math.sin(t * 4)) * 0.08;
+      armR = Math.sin(t * 10) * 0.8 - 1.2;
+      armL = -0.6;
     } else if (s === 'break') {
-      bob = Math.sin(t * 1.5) * 0.04;
+      bob = Math.sin(t * 1.5) * 0.03;
       turn = Math.sin(t * 0.7) * 0.3;
-      armR = -1.2;
+      armR = -1.4 + Math.sin(t * 2) * 0.2; // menyeruput ramen
     } else if (s === 'charge') {
-      bob = Math.sin(t) * 0.03;
-      flap = 0;
+      bob = Math.sin(t) * 0.02;
+      tilt = 0.08;
     }
     if (a.cheer > 0) {
-      bob += Math.sin(a.cheer * Math.PI) * 0.5;
-      armL = armR = -2.6;
+      bob += Math.sin(a.cheer * Math.PI) * 0.4;
+      armL = armR = -2.7;
     }
-    inner.current.position.y = bob;
-    inner.current.rotation.x = tilt;
-    head.current.rotation.y = turn;
-    head.current.rotation.z = roll;
-    wl.current.rotation.z = -(0.45 + flap);
-    wr.current.rotation.z = 0.45 + flap;
-    al.current.rotation.x = armL;
-    ar.current.rotation.x = armR;
+    refs.body.current.position.y = bob;
+    refs.body.current.rotation.x = tilt;
+    refs.head.current.rotation.y = turn;
+    refs.head.current.rotation.z = roll;
+    refs.al.current.rotation.x = armL;
+    refs.ar.current.rotation.x = armR;
+    refs.ll.current.rotation.x = legL;
+    refs.lr.current.rotation.x = legR;
+    if (refs.dragon.current) {
+      refs.dragon.current.position.y = Math.sin(t * 2.2) * 0.06;
+      refs.dragon.current.rotation.y = Math.sin(t * 0.7) * 0.5;
+    }
 
     blink.current -= dt;
     let ey = 1;
-    if (s === 'charge' || s === 'sleep') ey = 0.12;
+    if (s === 'charge' || s === 'sleep') ey = 0.15;
     else if (blink.current < 0) {
-      ey = 0.12;
+      ey = 0.15;
       if (blink.current < -0.13) blink.current = 2 + Math.random() * 4;
     }
-    eyes.current.scale.y = ey;
+    if (refs.eyes.current) refs.eyes.current.scale.y = ey;
 
     const key = a.missionId ? 'mission' : s;
     const col = BUBBLE[key];
@@ -265,12 +148,13 @@ export function KyuWorker({ def }) {
       bubbleMat.color.set(col);
       bubbleMat.emissive.set(col);
       bubble.current.position.y = topY + Math.sin(t * 3) * 0.06;
+      bubble.current.rotation.y = t * 1.5;
     }
     zzz.current.visible = s === 'sleep';
     if (s === 'sleep') {
       [z1.current, z2.current].forEach((z, i) => {
         const k = (t * 0.5 + i * 0.5) % 1;
-        z.position.set(0.25 + k * 0.3, (queen ? 2.1 : 1.75) + k * 0.7, 0);
+        z.position.set(0.25 + k * 0.3, (queen ? 1.9 : 1.7) + k * 0.7, 0);
         z.scale.setScalar((0.6 + k * 0.6) * (1 - Math.max(0, k - 0.8) * 5));
       });
     }
@@ -298,33 +182,15 @@ export function KyuWorker({ def }) {
         document.body.style.cursor = '';
       }}
     >
-      <mesh ref={ring} position={[0, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]} material={M.led} visible={false}>
-        <torusGeometry args={[0.6, 0.045, 6, 6]} />
-      </mesh>
-      <group ref={inner}>
-        {queen ? (
-          <RyuModel refs={{ head, wl, wr, al, ar, eyes }} />
-        ) : (
-          <DragonBody
-            refs={{ head, wl, wr, al, ar, eyes }}
-            body={mats.skin}
-            vest={def.guest ? null : DEPTS[def.dept].color}
-            bodyExtra={<BodyAccessory type={acc} />}
-            headExtra={<Accessory type={acc} />}
-          />
-        )}
-      </group>
+      <mesh ref={ring} geometry={ringGeo} position={[0, 0.03, 0]} rotation={[-Math.PI / 2, 0, 0]} material={M.led} visible={false} />
+      {queen ? <RyuModel refs={refs} /> : <CrewBody refs={refs} look={look} ai={!def.guest} />}
       <Billboard ref={zzz} visible={false}>
         <ZMark zRef={z1} />
         <ZMark zRef={z2} />
       </Billboard>
-      <Billboard ref={bubble} position={[0, 2.15, 0]} visible={false}>
-        <mesh rotation={[Math.PI / 2, 0, 0]} material={bubbleMat}>
-          <cylinderGeometry args={[0.13, 0.13, 0.04, 6]} />
-        </mesh>
-      </Billboard>
+      <mesh ref={bubble} geometry={bubbleGeo} material={bubbleMat} position={[0, topY, 0]} visible={false} />
       {(hover || selected) && (
-        <Html position={[0, queen ? 2.95 : 2.55, 0]} center style={{ pointerEvents: 'none' }} zIndexRange={[20, 0]}>
+        <Html position={[0, topY + 0.4, 0]} center style={{ pointerEvents: 'none' }} zIndexRange={[20, 0]}>
           <AgentTag def={def} />
         </Html>
       )}

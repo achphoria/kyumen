@@ -109,6 +109,7 @@ export function App() {
     );
   // pengembangan saja: lihat kedai 3D tanpa login (#/demo), dibuang dari build publik
   if (import.meta.env.DEV && route === '/demo') return <Tower />;
+  if (import.meta.env.DEV && route === '/demo-avatar') return <AvatarCreator />;
   // wajib login: tanpa sesi hanya halaman masuk & daftar dengan kode undangan
   if (route === '/join') return <JoinPage />;
   if (!ready) return <Splash />;

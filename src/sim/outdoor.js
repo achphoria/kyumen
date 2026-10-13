@@ -1,5 +1,6 @@
 // Staff manusia yang berjalan-jalan di dermaga depan kedai (outdoor), sesekali berjoget.
 import * as THREE from 'three';
+import { DEFAULT_POSE, POSE_ALIAS } from '../data/staff';
 
 const GROUND_Y = -2.2;
 const WALK = 1.7;
@@ -70,7 +71,7 @@ export function updateOutdoor(dt) {
     if (w.timer > 0) continue;
     if (w.state === 'idle' && Math.random() < 0.35) {
       w.state = 'dance';
-      w.pose = w.profile.pose === 'idle' ? 'pargoy' : w.profile.pose;
+      w.pose = w.profile.pose === 'idle' ? DEFAULT_POSE : POSE_ALIAS[w.profile.pose] || w.profile.pose;
       w.timer = 5 + Math.random() * 3;
     } else {
       w.state = 'walk';

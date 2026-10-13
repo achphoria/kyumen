@@ -1,7 +1,7 @@
 // Akun staff (Supabase Auth email + password) dan profil hc_profiles.
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
-import { DEFAULT_PROFILE } from '../data/staff';
+import { normalizeProfile } from '../data/staff';
 import { useHive } from './store';
 import { upsertWalker } from './outdoor';
 
@@ -30,7 +30,7 @@ let expiryTimer = null;
 // Profil database -> bentuk profil avatar yang dipakai scene
 export function toAvatarProfile(row) {
   if (!row) return null;
-  return { ...DEFAULT_PROFILE, ...(row.avatar || {}), id: 'me', name: row.name || '', dept: row.primary_dept };
+  return { ...normalizeProfile(row.avatar), id: 'me', name: row.name || '', dept: row.primary_dept };
 }
 
 function readPending() {

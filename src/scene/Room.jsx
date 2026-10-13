@@ -1,11 +1,12 @@
 import { useMemo, useRef } from 'react';
+import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
-import { HALF, WALL_H, TIER_GAP, SEATS_BY_ROOM, DEPTS } from '../data/hive';
+import { HALF, WALL_H, TIER_GAP, SEATS_BY_ROOM, DEPTS, doorSides } from '../data/hive';
 import { useHive } from '../sim/store';
 import { world } from '../sim/engine';
 import { M, std, Cyl, Sph } from './materials';
-import { woodTexture, marbleTexture } from './textures';
+import { woodTexture, marbleTexture, shojiTexture } from './textures';
 import { StaticMerge } from './StaticMerge';
 import {
   DESKS,
@@ -19,7 +20,6 @@ import {
   GardenSet,
   MissionSet,
   RoyalDecor,
-  PaperLantern,
 } from './Furniture';
 
 // empat dinding kotak: +x, +z (depan), -x, -z (belakang)
@@ -30,36 +30,49 @@ const SIDE = HALF * 2;
 const TATAMI = new Set(['royal', 'hall', 'lobby', 'gym', 'mission']);
 function floorMaterial(room) {
   if (room.kind === 'garden') return std('#E7D7B5', { roughness: 0.95 });
+  if (room.kind === 'deck') return std('#C9A27A', { map: woodTexture(), roughness: 0.7 });
   if (TATAMI.has(room.kind)) return std('#D6D99C', { map: woodTexture(), roughness: 0.9 });
   if (room.kind === 'server' || room.kind === 'pods' || room.id === 'ck' || room.id === 'wh')
     return std(room.kind === 'server' ? '#C9CED6' : '#E8E2D6', { map: marbleTexture(), roughness: 0.5 });
   return std('#E9CFA8', { map: woodTexture(), roughness: 0.62 });
 }
 
-// dinding shoji: kertas krem dengan kisi kayu gelap
-function ShojiWall({ wallH, len }) {
-  const cols = Math.max(2, Math.round(len / 1.5));
+// dinding shoji bertekstur: 1 mesh per bidang dinding (dulu belasan balok kisi) supaya ringan
+const DOOR_W = 1.7; // lebar lubang pintu antar-ruangan
+const DOOR_H = 1.45;
+const shojiCache = {};
+function shojiMaterial(len) {
+  const key = len.toFixed(2);
+  if (!shojiCache[key]) {
+    const map = shojiTexture().clone();
+    map.needsUpdate = true;
+    map.repeat.set(Math.max(1, Math.round(len / 1.5)), 1);
+    shojiCache[key] = new THREE.MeshStandardMaterial({ map, roughness: 0.9, emissive: '#FFC89A', emissiveIntensity: 0.1, emissiveMap: map });
+  }
+  return shojiCache[key];
+}
+const beamGeo = new THREE.BoxGeometry(1, 1, 1);
+
+function ShojiPanel({ x = 0, len, wallH }) {
+  return (
+    <mesh position={[x, wallH / 2, 0]} scale={[len, wallH, 0.12]} geometry={beamGeo} material={shojiMaterial(len)} castShadow receiveShadow />
+  );
+}
+
+// dinding utuh, atau dinding dengan lubang pintu di tengah (door = true)
+function ShojiWall({ wallH, len, door = false }) {
+  const side = (len - DOOR_W) / 2;
   return (
     <group>
-      <mesh position={[0, wallH / 2, 0]} material={M.shoji} castShadow receiveShadow>
-        <boxGeometry args={[len, wallH, 0.12]} />
-      </mesh>
-      {Array.from({ length: cols + 1 }, (_, i) => (
-        <mesh key={i} position={[-len / 2 + (i * len) / cols, wallH / 2, 0]} material={M.gold}>
-          <boxGeometry args={[0.07, wallH, 0.18]} />
-        </mesh>
-      ))}
-      {[0.35, 0.7].map((k) => (
-        <mesh key={k} position={[0, wallH * k, 0]} material={M.gold}>
-          <boxGeometry args={[len, 0.05, 0.16]} />
-        </mesh>
-      ))}
-      <mesh position={[0, 0.08, 0]} material={M.gold}>
-        <boxGeometry args={[len, 0.16, 0.18]} />
-      </mesh>
-      <mesh position={[0, wallH + 0.04, 0]} material={M.gold} castShadow>
-        <boxGeometry args={[len + 0.05, 0.08, 0.22]} />
-      </mesh>
+      {door ? (
+        <>
+          <ShojiPanel x={-(DOOR_W + side) / 2} len={side} wallH={wallH} />
+          <ShojiPanel x={(DOOR_W + side) / 2} len={side} wallH={wallH} />
+          <mesh position={[0, (DOOR_H + wallH) / 2, 0]} scale={[DOOR_W, wallH - DOOR_H, 0.14]} geometry={beamGeo} material={M.gold} />
+        </>
+      ) : (
+        <ShojiPanel len={len} wallH={wallH} />
+      )}
     </group>
   );
 }
@@ -78,7 +91,7 @@ function Plant({ p, s = 1 }) {
 
 // dekorasi umum: tanaman di dua sudut belakang
 function RoomDecor({ room }) {
-  if (room.kind === 'garden' || room.kind === 'server' || room.kind === 'gym') return null;
+  if (room.kind === 'garden' || room.kind === 'server' || room.kind === 'gym' || room.kind === 'deck') return null;
   const c = HALF - 0.75;
   return (
     <group>
@@ -144,9 +157,7 @@ function DoorWall({ wallH, len }) {
   return (
     <group>
       {[-1, 1].map((s) => (
-        <group key={s} position={[s * (1 + side / 2), 0, 0]}>
-          <ShojiWall wallH={wallH} len={side} />
-        </group>
+        <ShojiPanel key={s} x={s * (1 + side / 2)} len={side} wallH={wallH} />
       ))}
       {[-1, 1].map((s) => (
         <mesh key={s} position={[s * 1.02, wallH / 2, 0]} material={M.gold} castShadow>
@@ -181,10 +192,12 @@ export function Room({ room }) {
   const accent = room.dept ? DEPTS[room.dept].color : '#4A3524';
   const rim = useMemo(() => std(accent, { emissive: '#E5483B', emissiveIntensity: 0 }), [accent]);
   const floorMat = useMemo(() => floorMaterial(room), [room]);
-  const isGarden = room.kind === 'garden';
+  const isGarden = room.kind === 'garden' || room.kind === 'deck'; // ruang terbuka berpagar rendah
+  const doors = doorSides(room.id);
   const wallH = isGarden ? 0.55 : WALL_H;
   // tiang sudut setinggi lantai berikutnya supaya kedai tampak seperti satu bangunan
   const postH = room.tier === 2 || room.id === 'ck' || room.id === 'wh' ? 3.1 : TIER_GAP - 0.4;
+  const showPosts = room.kind !== 'garden';
 
   useFrame((st, dt) => {
     const cam = st.camera.position;
@@ -239,19 +252,6 @@ export function Room({ room }) {
         <boxGeometry args={[SIDE + 0.1, 0.16, SIDE + 0.1]} />
       </mesh>
 
-      {/* tiang sudut */}
-      {!isGarden &&
-        [
-          [-1, -1],
-          [1, -1],
-          [-1, 1],
-          [1, 1],
-        ].map(([sx, sz]) => (
-          <mesh key={`${sx}${sz}`} position={[sx * (HALF + 0.05), postH / 2, sz * (HALF + 0.05)]} material={M.gold} castShadow>
-            <boxGeometry args={[0.24, postH, 0.24]} />
-          </mesh>
-        ))}
-
       {/* dinding (otomatis turun di sisi yang menghadap kamera) */}
       {WALL_ANGLES.map((a, i) => {
         const transform = {
@@ -268,28 +268,37 @@ export function Room({ room }) {
         return (
           <group key={i} ref={(el) => (walls.current[i] = el)} {...transform} userData={{ cutaway: true }}>
             {isGarden ? (
-              <>
-                {/* pagar balkon kayu */}
-                <mesh position={[0, wallH, 0]} material={M.gold} castShadow>
-                  <boxGeometry args={[SIDE, 0.08, 0.12]} />
-                </mesh>
-                {Array.from({ length: 9 }, (_, k) => (
-                  <mesh key={k} position={[-SIDE / 2 + (k * SIDE) / 8, wallH / 2, 0]} material={M.wood}>
-                    <boxGeometry args={[0.07, wallH, 0.07]} />
-                  </mesh>
-                ))}
-              </>
+              !doors.has(i) && (
+                <>
+                  {/* pagar kayu rendah (dibuka di sisi yang berpintu) */}
+                  <mesh position={[0, wallH, 0]} scale={[SIDE, 0.08, 0.12]} geometry={beamGeo} material={M.gold} castShadow />
+                  {Array.from({ length: 7 }, (_, k) => (
+                    <mesh key={k} position={[-SIDE / 2 + (k * SIDE) / 6, wallH / 2, 0]} scale={[0.08, wallH, 0.08]} geometry={beamGeo} material={M.wood} />
+                  ))}
+                </>
+              )
             ) : (
-              <ShojiWall wallH={wallH} len={SIDE} />
+              <ShojiWall wallH={wallH} len={SIDE} door={doors.has(i)} />
             )}
-            {/* lentera kertas kecil di dinding */}
-            {!isGarden && i % 2 === 0 && <PaperLantern p={[SIDE * 0.3, wallH * 0.75, 0.25]} s={0.6} />}
           </group>
         );
       })}
 
       {/* furnitur & dekorasi statis digabung per material (lihat StaticMerge) */}
       <StaticMerge>
+        {/* tiang sudut */}
+        {showPosts &&
+          [
+            [-1, -1],
+            [1, -1],
+            [-1, 1],
+            [1, 1],
+          ].map(([sx, sz]) => (
+            <mesh key={`${sx}${sz}`} position={[sx * (HALF + 0.05), postH / 2, sz * (HALF + 0.05)]} material={M.gold} castShadow>
+              <boxGeometry args={[0.24, postH, 0.24]} />
+            </mesh>
+          ))}
+
         {SEATS_BY_ROOM[room.id]?.map((s) => {
           const Desk = DESKS[s.type];
           return (

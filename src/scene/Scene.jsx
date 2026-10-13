@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { ROOM_LIST } from '../data/hive';
 import { Room } from './Room';
-import { Agents, Island, Harbor, Roofs, Lift, Effects, CameraRig } from './World';
+import { Agents, Island, Harbor, Roofs, WestTerrace, Bridges, Effects, CameraRig } from './World';
 import { OutdoorStaff } from './StaffAvatar';
 import { DayNight } from './DayNight';
 import { TvDirector } from './TvDirector';
@@ -17,9 +17,9 @@ function DevExpose() {
   return null;
 }
 
-// Peta bayangan diperbarui ~5x per detik (bukan tiap frame): matahari & naga bergerak pelan,
+// Peta bayangan diperbarui ~3x per detik (bukan tiap frame): matahari & naga bergerak pelan,
 // jadi hasilnya sama tapi pass bayangan tidak menggambar ulang ratusan objek setiap frame.
-function ShadowThrottle({ hz = 5 }) {
+function ShadowThrottle({ hz = 3 }) {
   const { gl } = useThree();
   const acc = useRef(0);
   useEffect(() => {
@@ -46,7 +46,7 @@ export function Scene({ tv = false }) {
     <>
       {import.meta.env.DEV && <DevExpose />}
       <ShadowThrottle />
-      <fog attach="fog" args={['#E3F0FA', 110, 300]} />
+      <fog attach="fog" args={['#E3F0FA', 95, 230]} />
       <SkyDome />
       <CloudSea />
       <WarmEnvironment intensity={0.42} />
@@ -59,7 +59,8 @@ export function Scene({ tv = false }) {
       {ROOM_LIST.map((r) => (
         <Room key={r.id} room={r} />
       ))}
-      <Lift />
+      <WestTerrace />
+      <Bridges />
       <Agents />
       <OutdoorStaff />
       <Effects />
