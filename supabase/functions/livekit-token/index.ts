@@ -1,0 +1,92 @@
+// Edge Function: livekit-token
+// Memberi "tiket masuk" ruang suara Ruang Tatami (LiveKit) untuk staff Kyuka Ramen yang sudah login.
+// Rahasia LiveKit dibaca dari Supabase Edge Function Secrets dan TIDAK pernah dikirim ke browser.
+//   LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET
+import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
+
+// ruang suara: rapat Ruang Tatami dan obrolan bebas di kedai
+const ROOMS: Record<string, string> = { hall: 'kyumen-hall', plaza: 'kyumen-plaza' };
+const TTL_SEC = 2 * 60 * 60; // tiket berlaku 2 jam
+
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { ...CORS, 'Content-Type': 'application/json' } });
+
+const b64url = (bytes: Uint8Array) =>
+  btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const enc = new TextEncoder();
+
+// Token akses LiveKit = JWT HS256 (iss = API key, sub = identitas peserta, video = izin ruang)
+async function livekitToken(key: string, secret: string, claims: Record<string, unknown>, ttl = TTL_SEC) {
+  const header = b64url(enc.encode(JSON.stringify({ alg: 'HS256', typ: 'JWT' })));
+  const now = Math.floor(Date.now() / 1000);
+  const payload = b64url(enc.encode(JSON.stringify({ iss: key, nbf: now - 10, exp: now + ttl, ...claims })));
+  const hmac = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = new Uint8Array(await crypto.subtle.sign('HMAC', hmac, enc.encode(`${header}.${payload}`)));
+  return `${header}.${payload}.${b64url(sig)}`;
+}
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
+  if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
+
+  const url = Deno.env.get('LIVEKIT_URL');
+  const key = Deno.env.get('LIVEKIT_API_KEY');
+  const secret = Deno.env.get('LIVEKIT_API_SECRET');
+  if (!url || !key || !secret) return json({ error: 'livekit_not_configured' }, 500);
+
+  // Pastikan yang meminta adalah staff yang login (pakai sesi Supabase miliknya, tunduk RLS).
+  // Token diperiksa langsung ke Supabase Auth, jadi berlaku untuk kunci JWT lama maupun baru.
+  const auth = req.headers.get('Authorization') ?? '';
+  const jwt = auth.replace(/^Bearer\s+/i, '');
+  if (!jwt) return json({ error: 'not_logged_in' }, 401);
+  const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    global: { headers: { Authorization: `Bearer ${jwt}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: userData, error: userErr } = await sb.auth.getUser(jwt);
+  if (userErr || !userData?.user) return json({ error: 'not_logged_in' }, 401);
+  const uid = userData.user.id;
+
+  const { data: prof } = await sb.from('hc_profiles').select('name, role, primary_dept, avatar').eq('id', uid).maybeSingle();
+  if (!prof) return json({ error: 'not_staff' }, 403);
+  const body = await req.json().catch(() => ({}));
+  const roomKey = String(body?.room ?? 'hall');
+  const ROOM = Object.hasOwn(ROOMS, roomKey) ? ROOMS[roomKey] : ROOMS.hall;
+
+  // { action: 'status' } -> siapa saja yang sedang ada di ruang suara (sumber kebenaran kedua
+  // untuk banner meeting di lobi, kalau kanal realtime perangkat sempat terputus)
+  if (body?.action === 'status') {
+    const admin = await livekitToken(key, secret, { sub: 'kyumen-status', video: { room: ROOM, roomAdmin: true, roomList: true } }, 60);
+    const http = url.replace(/^ws/, 'http').replace(/\/+$/, '');
+    const res = await fetch(`${http}/twirp/livekit.RoomService/ListParticipants`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${admin}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ room: ROOM }),
+    });
+    if (!res.ok) return json({ people: [], lk: res.status }); // 404 = ruang belum ada = tidak ada meeting
+    const data = await res.json().catch(() => ({}));
+    const people = (data.participants ?? []).map((p: { identity: string; name?: string; joined_at?: string | number }) => ({
+      id: p.identity,
+      name: p.name || 'Staff',
+      joinedAt: Number(p.joined_at || 0) * 1000,
+    }));
+    return json({ people });
+  }
+
+  if (prof.role === 'viewer') return json({ error: 'viewer_cannot_join' }, 403);
+
+  const token = await livekitToken(key, secret, {
+    sub: uid,
+    name: prof.name,
+    metadata: JSON.stringify({ role: prof.role, dept: prof.primary_dept, color: prof.avatar?.outfitColor ?? null }),
+    video: { room: ROOM, roomJoin: true, canPublish: true, canSubscribe: true, canPublishData: true },
+  });
+
+  return json({ token, url, room: ROOM });
+});

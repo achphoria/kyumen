@@ -1,0 +1,175 @@
+// Data untuk layar dinding Ruang Tatami, dibaca live dari simulasi kedai.
+import { useEffect, useState } from 'react';
+import { AGENTS, AGENT_BY_ID, DEPTS } from '../data/hive';
+import { DEMO_STAFF } from '../data/staff';
+import { useHive } from '../sim/store';
+import { world } from '../sim/engine';
+import { outdoor } from '../sim/outdoor';
+import { useAuth } from '../sim/auth';
+import { useAi, modelLabel } from '../hall/queenBea';
+
+// jam WIB (desimal) dari timestamp database
+const wibHourOf = (iso) => {
+  const d = new Date(new Date(iso).getTime() + 7 * 3600e3);
+  return d.getUTCHours() + d.getUTCMinutes() / 60;
+};
+
+export const cut = (s, n) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
+export const hhmm = (h) => {
+  if (h === undefined) return '--:--';
+  const m = Math.floor((h % 1) * 60);
+  return `${String(Math.floor(h)).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+};
+export const DAY = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+export const MONTH = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+export const wibNow = () => new Date(Date.now() + 7 * 3600e3); // dibaca dengan getter UTC
+export const dayStart = (d) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+
+export function demoEvents() {
+  const base = dayStart(wibNow());
+  const mk = (off, title, color, big) => ({ ts: base + off * 864e5, title, color, big });
+  return [
+    mk(-2, 'Evaluasi skill agent', '#7F77DD'),
+    mk(1, 'Training kru outlet baru 09.00', '#3B82D6'),
+    mk(2, 'Rapat budget pembukaan', '#3A8F6B'),
+    mk(4, 'Uji rasa menu Ramen Day', '#D9822B'),
+    mk(5, 'Promo Ramen Day', '#E5483B', true),
+    mk(9, 'Proses payroll', '#7A5BC7'),
+    mk(12, 'Soft opening outlet baru', '#2E4A7D'),
+  ];
+}
+
+// Teks ringkas untuk layar dinding (lebar terbatas)
+export function feedText(e) {
+  const after = e.text.includes(': ') ? e.text.split(': ').slice(1).join(': ') : e.text;
+  switch (e.kind) {
+    case 'dispatch':
+      return `Misi ${DEPTS[e.dept]?.short || ''}: ${after}`;
+    case 'done':
+      return e.text.startsWith('Owner') ? e.text : `${e.text.split(' ')[0]} selesai misi`;
+    case 'meeting':
+      return 'Rapat di Ruang Tatami';
+    case 'guest':
+      return 'Tamu masuk Genkan';
+    case 'clock':
+      return e.text.startsWith('Malam') ? 'Malam: jaga malam aktif' : 'Pagi: kedai buka';
+    default:
+      return e.text;
+  }
+}
+
+export function useTick(ms) {
+  const [, set] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => set((n) => n + 1), ms);
+    return () => clearInterval(id);
+  }, [ms]);
+}
+
+export function skillScores() {
+  return AGENTS.filter((a) => a.id !== 'ceo')
+    .map((a) => {
+      const base = 70 + ((a.id.length * 7 + a.id.charCodeAt(0)) % 15);
+      const done = world.doneBy[a.id] || 0;
+      return { id: a.id, nick: a.nick, done, score: Math.min(99, base + done * 3) };
+    })
+    .sort((x, y) => y.score - x.score);
+}
+
+export function useHallData(me) {
+  useTick(1000);
+  const log = useHive((s) => s.log);
+  const missions = useHive((s) => s.missions);
+  const stats = useHive((s) => s.stats);
+  const approvals = useHive((s) => s.approvals);
+  const agentStates = useHive((s) => s.agentStates);
+  const onlineStaff = useHive((s) => s.onlineStaff);
+  const dbActivity = useHive((s) => s.dbActivity);
+  const planTasks = useHive((s) => s.planTasks);
+  const account = useAuth((s) => s.account);
+  const ai = useAi();
+  const real = !!account; // mode real: hanya data sungguhan dari database
+
+  // mode real: aktivitas sungguhan saja (database, terbaru di atas)
+  // mode demo: aktivitas agent simulasi + aktivitas manusia
+  const human = dbActivity.map((a) => ({ id: `db-${a.id}`, at: new Date(a.created_at).getTime(), clock: wibHourOf(a.created_at), text: a.text, kind: 'human' }));
+  const merged = real ? human : [...log.map((e) => ({ ...e, text: feedText(e) })), ...human].sort((a, b) => (b.clock ?? 0) - (a.clock ?? 0));
+  const feed = merged.slice(0, 6).map((e) => ({ id: e.id, t: hhmm(e.clock), text: e.text, kind: e.kind }));
+
+  const pending = approvals.filter((a) => a.status === 'pending');
+  const openTasks = planTasks.filter((t) => t.col !== 'done');
+  const open = [
+    ...pending.map((a) => ({ title: a.title, sub: `${a.by} · tunggu Anda`, color: '#E24B4A' })),
+    ...(real ? openTasks.map((t) => ({ title: t.title, sub: `${AGENT_BY_ID[t.who]?.nick || t.who} · ${t.col === 'doing' ? 'jalan' : 'belum'}`, color: t.col === 'doing' ? '#3B82D6' : '#C0C5CE' })) : []),
+    ...[...(real ? [] : missions)]
+      .sort((a, b) => a.progress - b.progress)
+      .map((m) => ({
+        title: m.title,
+        sub: `${AGENT_BY_ID[m.leadId].nick} · ${Math.round(m.progress * 100)}%`,
+        color: m.progress < 0.3 ? '#3B82D6' : '#C0C5CE',
+      })),
+  ];
+
+  const now = wibNow();
+  const dow = (now.getUTCDay() + 6) % 7;
+  const week = Array.from({ length: 7 }, (_, i) => new Date(now.getTime() + (i - dow) * 864e5));
+  const wStart = dayStart(week[0]);
+  const events = real ? [] : demoEvents().filter((e) => e.ts >= wStart && e.ts < wStart + 7 * 864e5);
+
+  const awake = Object.values(agentStates).filter((a) => a.state !== 'sleep').length;
+  const prompts = useHive((s) => s.agentPrompts).filter((id) => id !== 'ceo');
+  const aiOn = (ai.status === 'on' ? 1 : 0) + prompts.length;
+  const ticker = real
+    ? [
+        `${hhmm(stats.clock)} WIB`,
+        `Staff online ${onlineStaff.length + 1}`,
+        `Agent tersambung AI ${aiOn}/${AGENTS.length}`,
+        `Persetujuan menunggu ${pending.length}`,
+        `Tugas terbuka ${openTasks.length}`,
+        dbActivity.length ? `Aktivitas terakhir ${hhmm(wibHourOf(dbActivity[0].created_at))}` : 'Belum ada aktivitas',
+      ]
+    : [
+    `${hhmm(stats.clock)} WIB`,
+    `Mangkuk ${stats.honey}`,
+    `Misi selesai ${stats.done}`,
+    `Misi berjalan ${missions.length}`,
+    `Agent aktif ${awake}/${AGENTS.length}`,
+    `Persetujuan menunggu ${pending.length}`,
+      ];
+
+  const online = account
+    ? [
+        { name: `${me.name || 'Anda'} (Anda)`, color: me.outfitColor, where: 'rapat', here: true },
+        ...onlineStaff.map((o) => ({
+          name: o.name || 'Staff',
+          color: o.outfitColor,
+          here: o.page === '/hall',
+          where: o.page === '/hall' ? 'rapat' : o.dancing ? 'joget di taman' : 'di kedai',
+        })),
+      ]
+    : [
+        { name: `${me.name || 'Anda'} (Anda)`, color: me.outfitColor, where: 'rapat', here: true },
+        ...DEMO_STAFF.map((s, i) => {
+          const w = outdoor.byId[s.id];
+          return { name: s.name, color: s.outfitColor, here: i === 0, where: i === 0 ? 'rapat' : w?.state === 'dance' ? 'joget di taman' : s.spot };
+        }),
+      ];
+
+  const skills = skillScores();
+  const mover = [...skills].sort((a, b) => b.done - a.done)[0];
+  // mode real: panel "Agent AI" menggantikan skor skill simulasi
+  // urutan: Ryu, agent yang sedang mengerjakan tugas, lalu agent online lainnya
+  const working = prompts.filter((id) => agentStates[id]?.missionId);
+  const idle = prompts.filter((id) => !agentStates[id]?.missionId);
+  const aiAgents = [
+    { id: 'ceo', nick: 'Ryu', on: ai.status === 'on', status: ai.status === 'on' ? 'online' : 'off' },
+    ...[...working, ...idle].slice(0, 4).map((id) => ({ id, nick: AGENT_BY_ID[id]?.nick || id, on: true, status: agentStates[id]?.missionId ? 'kerja' : 'online' })),
+  ];
+  const aiNote = prompts.length
+    ? `${working.length} sedang kerja · ${prompts.length} agent Claude via n8n`
+    : ai.status === 'on'
+      ? `${modelLabel(ai.model)} · ${AGENTS.length - 1} agent lain belum tersambung`
+      : 'belum tersambung';
+
+  return { real, feed, open, week, dow, events, ticker, online, skills: skills.slice(0, 5), mover, aiAgents, aiOn, aiNote, pending: pending.length };
+}

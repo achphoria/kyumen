@@ -1,0 +1,1058 @@
+/* ---------- Ruang Kerja Agent & Akses agent ---------- */
+.aw-page {
+  max-width: 2200px;
+  margin: 0 auto;
+  padding: 14px 18px 18px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+.aw-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.aw-top h1 {
+  flex: 1;
+  margin: 0;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 24px;
+}
+.aw-grid {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 330px;
+  gap: 14px;
+  height: calc(100vh - 84px);
+  min-height: 520px;
+}
+.aw-left,
+.aw-right,
+.aw-main {
+  background: rgba(255, 251, 241, 0.96);
+  border: 1.5px solid #f1dfb4;
+  border-radius: 18px;
+  min-height: 0;
+}
+.aw-left,
+.aw-right {
+  padding: 12px;
+  overflow-y: auto;
+}
+.aw-select {
+  display: none;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 12px;
+  border: 1.5px solid #eadfc6;
+  background: #fffdf7;
+  font: inherit;
+  margin-bottom: 8px;
+}
+.aw-dept {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 4px;
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8a7a55;
+}
+.aw-dept:first-child {
+  margin-top: 0;
+}
+.aw-dept i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+.aw-agent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  text-align: left;
+  font-size: 13.5px;
+}
+.aw-agent b {
+  flex: 1;
+  font-weight: 600;
+}
+.aw-agent:hover {
+  background: #f6efe3;
+}
+.aw-agent.on {
+  background: #dfe7f3;
+  color: #22324f;
+}
+.aw-agent.locked {
+  opacity: 0.6;
+}
+.aw-label {
+  margin: 14px 0 6px;
+  font-size: 11.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8a7a55;
+}
+.aw-thread {
+  display: flex;
+  align-items: stretch;
+  border-radius: 10px;
+  margin-bottom: 2px;
+}
+.aw-thread > button:first-child {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 6px 8px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  border-radius: 10px;
+}
+.aw-thread span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+.aw-thread small {
+  font-size: 11px;
+  color: #8a8371;
+}
+.aw-thread.on,
+.aw-thread:hover {
+  background: #f6efe3;
+}
+.aw-thread.new {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1.5px dashed #e2cfa4;
+  background: transparent;
+  color: #2e4a7d;
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.aw-thread.new.on {
+  border-style: solid;
+  background: #dfe7f3;
+}
+.aw-del {
+  border: 0;
+  background: transparent;
+  color: #b0a68f;
+  font-size: 16px;
+  padding: 0 8px;
+}
+.aw-del:hover {
+  color: #a32d2d;
+}
+
+.aw-main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.aw-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1.5px solid #e9dfcf;
+}
+.aw-av {
+  --c: #2e4a7d;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--c) 25%, #fff);
+  border: 2px solid var(--c);
+  font-weight: 800;
+  color: #4a2a06;
+  font-size: 15px;
+}
+.aw-av.sm {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+.aw-who {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.aw-who b {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 18px;
+}
+.aw-who span {
+  font-size: 12.5px;
+  color: #8a8371;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aw-model {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f6efe3;
+  color: #2e4a7d;
+  white-space: nowrap;
+}
+.aw-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.aw-hello {
+  margin: auto;
+  max-width: 420px;
+  text-align: center;
+  color: #6b6658;
+}
+.aw-msg {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  max-width: min(88%, 980px);
+}
+.aw-msg.user {
+  align-self: flex-end;
+}
+.aw-bub {
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1.5px solid #e9dfcf;
+  font-size: 14.5px;
+  line-height: 1.55;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.aw-msg.user .aw-bub {
+  background: #dfe7f3;
+  border-color: #b9cbe6;
+  border-bottom-right-radius: 6px;
+}
+.aw-msg.agent .aw-bub {
+  border-bottom-left-radius: 6px;
+}
+.aw-bub p {
+  margin: 0 0 6px;
+}
+.aw-bub p:last-of-type {
+  margin-bottom: 2px;
+}
+.aw-bub ul {
+  margin: 4px 0 8px;
+  padding-left: 20px;
+}
+.aw-bub .aw-h {
+  font-weight: 800;
+  margin-top: 6px;
+}
+.aw-bub small {
+  display: block;
+  font-size: 10.5px;
+  color: #a39b86;
+  margin-top: 4px;
+}
+.aw-bub.typing {
+  display: flex;
+  gap: 4px;
+  padding: 14px 16px;
+}
+.aw-bub.typing i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22324f;
+  animation: aw-dot 1s infinite ease-in-out;
+  color: #fff8ee;
+}
+.aw-bub.typing i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.aw-bub.typing i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes aw-dot {
+  50% {
+    transform: translateY(-4px);
+    opacity: 0.5;
+  }
+}
+.aw-sys {
+  align-self: center;
+  max-width: 90%;
+  text-align: center;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: #f1efe8;
+  color: #6b6658;
+}
+.aw-deleg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.aw-deleg button {
+  border: 1.5px solid #b9cbe6;
+  background: #fffaf0;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  color: #2e4a7d;
+}
+.aw-inputwrap {
+  margin: 0 14px 14px;
+}
+.aw-input {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 8px 8px 8px 8px;
+  border: 1.5px solid #e2cfa4;
+  border-radius: 18px;
+  background: #fffdf7;
+}
+.aw-input textarea {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  resize: none;
+  font: inherit;
+  font-size: 14.5px;
+  max-height: 160px;
+  min-height: 24px;
+  padding: 6px 0;
+  outline: none;
+  field-sizing: content;
+}
+.aw-send {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 0;
+  background: #2e4a7d;
+  color: #fff8ee;
+  font-size: 16px;
+}
+.aw-send:disabled {
+  opacity: 0.45;
+}
+.aw-err {
+  margin: 0 14px 8px;
+}
+.aw-readonly,
+.aw-locked {
+  margin: auto;
+  text-align: center;
+  padding: 24px;
+  color: #6b6658;
+}
+.aw-readonly {
+  margin: 0 14px 14px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #f1efe8;
+  font-size: 13px;
+}
+.aw-chip {
+  display: inline-block;
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #dfe7f3;
+  color: #22324f;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.aw-task {
+  border: 1.5px solid #e9dfcf;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  background: #fff;
+}
+.aw-task > button {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+}
+.aw-col {
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #eceae4;
+  color: #6b6658;
+}
+.aw-col.doing {
+  background: #fde6c8;
+  color: #b3362b;
+}
+.aw-col.done {
+  background: #e3f1d4;
+  color: #3f6b1c;
+}
+.aw-result {
+  padding: 0 10px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.aw-result p {
+  margin: 0 0 6px;
+}
+.aw-result ul {
+  margin: 0 0 6px;
+  padding-left: 18px;
+}
+.aw-role {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #4a4335;
+}
+.aw-prompt {
+  margin-top: 8px;
+  font-size: 12.5px;
+}
+.aw-prompt p {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  color: #6b6658;
+}
+.small {
+  font-size: 12.5px;
+}
+.aw-empty-card {
+  max-width: 460px;
+  margin: 12vh auto;
+  padding: 28px;
+  text-align: center;
+  border-radius: 18px;
+  background: rgba(255, 251, 241, 0.96);
+  border: 1.5px solid #f1dfb4;
+}
+
+/* Akses agent */
+.aw-intro {
+  margin: 0 0 14px;
+  line-height: 1.8;
+  color: #4a4335;
+}
+.acc-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 14px;
+}
+.acc-card {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 251, 241, 0.96);
+  border: 1.5px solid #f1dfb4;
+  transition: opacity 0.2s;
+}
+.acc-card.saving {
+  opacity: 0.6;
+}
+.acc-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.acc-head b {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 17px;
+}
+.acc-count {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2e4a7d;
+}
+.acc-dept {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  border-top: 1px solid #f3e8cc;
+}
+.acc-dept.home .acc-dname {
+  color: #22324f;
+  font-weight: 800;
+}
+.acc-dname {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: #6b6658;
+}
+.acc-dname i {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+.acc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.acc-chip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: 1.5px solid #e2dccb;
+  background: #f7f5ef;
+  color: #8a8371;
+}
+.acc-chip.use {
+  background: #e3f1d4;
+  border-color: #a9d07e;
+  color: #3f6b1c;
+}
+.acc-chip.train {
+  background: #fde6c8;
+  border-color: #f2b46b;
+  color: #b3362b;
+}
+.acc-quick {
+  display: flex;
+  gap: 4px;
+}
+.acc-quick button {
+  border: 0;
+  background: transparent;
+  font-size: 11.5px;
+  color: #2e4a7d;
+  text-decoration: underline;
+  padding: 2px 4px;
+}
+
+/* tombol chat di daftar agent kedai */
+.dir-row {
+  display: flex;
+  align-items: center;
+}
+.dir-row .dir-agent {
+  flex: 1;
+  min-width: 0;
+}
+.dir-chat {
+  flex: none;
+  border: 0;
+  background: transparent;
+  font-size: 14px;
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+.dir-chat:hover {
+  background: rgba(46, 74, 125, 0.22);
+}
+
+@media (max-width: 1100px) {
+  .aw-grid {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+  .aw-right {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 760px) {
+  .aw-page {
+    padding: 10px 10px 16px;
+  }
+  .aw-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .aw-select {
+    display: block;
+  }
+  .aw-agents {
+    display: none;
+  }
+  .aw-main {
+    height: 72vh;
+  }
+  .aw-msg {
+    max-width: 92%;
+  }
+  .acc-list {
+    grid-template-columns: 1fr;
+  }
+  .acc-dept {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Tahap 3: lampiran, suara, aksi pesan, jadikan tugas ---------- */
+.aw-main {
+  position: relative;
+}
+.aw-main.drag {
+  border-color: #2e4a7d;
+}
+.aw-drop {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: rgba(252, 231, 176, 0.88);
+  border: 2.5px dashed #e0a100;
+  font-weight: 800;
+  color: #22324f;
+  pointer-events: none;
+}
+.aw-voice {
+  border: 1.5px solid #eadfc6;
+  background: #fffdf7;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #6b6658;
+  white-space: nowrap;
+}
+.aw-voice.on {
+  background: #dfe7f3;
+  border-color: #b9cbe6;
+  color: #22324f;
+}
+.aw-input.rec {
+  border-color: #e05a47;
+  box-shadow: 0 0 0 3px rgba(224, 90, 71, 0.15);
+}
+.aw-tool {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 17px;
+}
+.aw-tool:hover:not(:disabled) {
+  background: #f6efe3;
+}
+.aw-tool:disabled {
+  opacity: 0.4;
+}
+.aw-tool.on {
+  background: #fde2dc;
+  color: #b3261e;
+  animation: aw-pulse 1.2s infinite;
+}
+@keyframes aw-pulse {
+  50% {
+    box-shadow: 0 0 0 5px rgba(224, 90, 71, 0.18);
+  }
+}
+.aw-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0;
+}
+.aw-inputwrap > .aw-files {
+  margin: 0 0 6px;
+}
+.aw-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 240px;
+  padding: 4px 8px 4px 4px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1.5px solid #e9dfcf;
+  font-size: 12.5px;
+}
+.aw-file.link {
+  cursor: pointer;
+}
+.aw-file.link:hover {
+  border-color: #b9cbe6;
+}
+.aw-file i {
+  flex: none;
+  font-style: normal;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 4px 5px;
+  border-radius: 6px;
+  background: #dfe7f3;
+  color: #22324f;
+}
+.aw-file span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.aw-file small {
+  flex: none;
+  color: #8a8371;
+}
+.aw-file button {
+  border: 0;
+  background: transparent;
+  color: #a39b86;
+  font-size: 15px;
+  padding: 0 2px;
+}
+.aw-msg.user .aw-file {
+  background: #fff7e0;
+}
+.aw-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.aw-acts button {
+  border: 0;
+  background: #f7f2e4;
+  border-radius: 8px;
+  padding: 3px 8px;
+  font-size: 11.5px;
+  color: #6b5a33;
+}
+.aw-acts button:hover {
+  background: #dfe7f3;
+}
+.aw-src {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 6px;
+  font-size: 12px;
+}
+.aw-src a {
+  color: #2e4a7d;
+}
+.aw-notice {
+  margin: 0 14px 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #e3f1d4;
+  color: #3f6b1c;
+  font-size: 13px;
+}
+.aw-taskform {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #fffaf0;
+  border: 1.5px solid #b9cbe6;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aw-taskform label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b6658;
+}
+.aw-taskform input {
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1.5px solid #eadfc6;
+  font: inherit;
+  font-size: 14px;
+}
+.aw-seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.aw-seg button {
+  border: 1.5px solid #eadfc6;
+  background: #fff;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12.5px;
+}
+.aw-seg button.on {
+  background: #dfe7f3;
+  border-color: #b9cbe6;
+  color: #22324f;
+  font-weight: 700;
+}
+.aw-formbtn {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.aw-formbtn button {
+  border: 0;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+.aw-formbtn .save {
+  width: auto;
+  margin: 0;
+}
+.aw-task small {
+  font-size: 11px;
+}
+@media (max-width: 760px) {
+  .aw-voice .lbl {
+    display: none;
+  }
+}
+
+/* ---------- Tahap 4 & 5: tab, skor, skill, masukan, tugas rutin ---------- */
+.aw-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  background: #f5edd8;
+}
+.aw-tabs button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  border-radius: 9px;
+  padding: 6px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #8a7a55;
+}
+.aw-tabs button.on {
+  background: #fff;
+  color: #22324f;
+  box-shadow: 0 1px 3px rgba(120, 80, 0, 0.12);
+}
+.aw-score {
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f6efe3;
+  color: #2e4a7d;
+  white-space: nowrap;
+}
+.aw-score.good {
+  background: #e3f1d4;
+  color: #3f6b1c;
+}
+.aw-score.low {
+  background: #fde2dc;
+  color: #a32d2d;
+}
+.aw-score.none {
+  background: #f1efe8;
+  color: #8a8371;
+  font-weight: 600;
+}
+.aw-scorecard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1.5px solid #e9dfcf;
+  font-size: 13px;
+}
+.aw-scorecard b {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 30px;
+  color: #22324f;
+  min-width: 44px;
+  text-align: center;
+}
+.aw-skill {
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1.5px solid #e9dfcf;
+  font-size: 13px;
+}
+.aw-skill.off {
+  opacity: 0.55;
+}
+.aw-skill b {
+  display: block;
+}
+.aw-skill p {
+  margin: 3px 0;
+  line-height: 1.45;
+  color: #4a4335;
+  white-space: pre-wrap;
+}
+.aw-when {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #2e4a7d;
+}
+.aw-count {
+  display: inline-block;
+  min-width: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #e05a47;
+  color: #fff;
+  font-size: 11px;
+  text-align: center;
+}
+.aw-fb {
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1.5px solid #f6d3cb;
+  font-size: 13px;
+}
+.aw-fb-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.aw-fb-q {
+  margin: 4px 0;
+  font-style: italic;
+  color: #6b6658;
+}
+.aw-fb-note {
+  margin: 4px 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #fffaf0;
+}
+.aw-fb details p {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: #6b6658;
+  white-space: pre-wrap;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.aw-rate {
+  flex-basis: 100%;
+  margin-top: 4px;
+  padding: 8px;
+  border-radius: 10px;
+  background: #fffaf0;
+  border: 1.5px solid #b9cbe6;
+}
+.aw-rate label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b6658;
+}
+.aw-rate textarea,
+.aw-taskform textarea,
+.aw-taskform select {
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1.5px solid #eadfc6;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 400;
+  resize: vertical;
+  background: #fff;
+}
+.aw-acts button.on {
+  background: #e3f1d4;
+  color: #3f6b1c;
+}
+.aw-acts button.on.bad {
+  background: #fde2dc;
+  color: #a32d2d;
+}
+.aw-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.aw-row label {
+  flex: 1;
+  min-width: 90px;
+}
+.aw-notice.inline {
+  margin: 6px 0;
+}
+.aw-role.clamp {
+  max-height: 140px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-size: 12.5px;
+}
+
+/* skor skill di kartu agent kedai */
+.card-score {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: #fffdf7;
+  border: 1.5px solid #e9dfcf;
+  font-size: 12px;
+}
+.card-score span {
+  color: #8a8371;
+}
+.card-score b {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 18px;
+  color: #22324f;
+}
+.card-score small {
+  margin-left: auto;
+  color: #8a8371;
+}
