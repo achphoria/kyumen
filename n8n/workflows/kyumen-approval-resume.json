@@ -19,7 +19,6 @@
       },
       "credentials": {
         "httpHeaderAuth": {
-          "id": "tcVY2EJbqHcERiSJ",
           "name": "Kyumen Webhook Secret"
         }
       },
@@ -52,7 +51,6 @@
       },
       "credentials": {
         "supabaseApi": {
-          "id": "ZbVvCjvCLHBNrgXQ",
           "name": "Supabase - ACHPHORIA"
         }
       },
@@ -239,7 +237,6 @@
       },
       "credentials": {
         "httpHeaderAuth": {
-          "id": "tcVY2EJbqHcERiSJ",
           "name": "Kyumen Webhook Secret"
         }
       },
@@ -275,7 +272,6 @@
       },
       "credentials": {
         "supabaseApi": {
-          "id": "ZbVvCjvCLHBNrgXQ",
           "name": "Supabase - ACHPHORIA"
         }
       },
@@ -314,7 +310,6 @@
       },
       "credentials": {
         "supabaseApi": {
-          "id": "ZbVvCjvCLHBNrgXQ",
           "name": "Supabase - ACHPHORIA"
         }
       },
@@ -414,7 +409,6 @@
       },
       "credentials": {
         "supabaseApi": {
-          "id": "ZbVvCjvCLHBNrgXQ",
           "name": "Supabase - ACHPHORIA"
         }
       },
@@ -581,5 +575,6 @@
   },
   "settings": {
     "executionOrder": "v1"
-  }
+  },
+  "active": false
 }

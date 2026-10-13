@@ -5,7 +5,10 @@
       "name": "Every 5 Minutes",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [0, 300],
+      "position": [
+        0,
+        300
+      ],
       "parameters": {
         "rule": {
           "interval": [
@@ -23,7 +26,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "onError": "continueRegularOutput",
-      "position": [260, 300],
+      "position": [
+        260,
+        300
+      ],
       "parameters": {
         "method": "POST",
         "url": "https://ckoejqzownrujikefgwb.supabase.co/functions/v1/agent-chat",
@@ -47,7 +53,6 @@
       },
       "credentials": {
         "httpHeaderAuth": {
-          "id": "tcVY2EJbqHcERiSJ",
           "name": "Kyumen Webhook Secret"
         }
       },
@@ -69,5 +74,6 @@
   },
   "settings": {
     "executionOrder": "v1"
-  }
+  },
+  "active": false
 }

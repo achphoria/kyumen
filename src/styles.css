@@ -874,6 +874,7 @@ h2 {
 .acct-btn.ghost {
   background: #fffdf7;
   border-color: var(--line);
+  color: var(--ink);
 }
 .is-mobile .acct-who span {
   display: none;
