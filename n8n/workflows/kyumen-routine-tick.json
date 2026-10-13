@@ -26,7 +26,7 @@
       "position": [260, 300],
       "parameters": {
         "method": "POST",
-        "url": "https://ccbyqgisgclqlqatxwbk.supabase.co/functions/v1/agent-chat",
+        "url": "https://ckoejqzownrujikefgwb.supabase.co/functions/v1/agent-chat",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [

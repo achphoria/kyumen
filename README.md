@@ -47,11 +47,16 @@ Mode pengembangan saja (tidak ikut build publik):
 - `#/demo`: lihat kedai 3D tanpa login
 - `#/queen`: pratinjau model Ryu & naga kru
 
-## Backend
+## Backend (Supabase project ACHPHORIA)
 
-- Supabase: tabel berawalan `hc_` + Edge Functions `ryu`, `agent-chat`, `meeting-recap`, `livekit-token` (folder `supabase/`).
-- n8n: workflow di `n8n/workflows/kyumen-*.json`, webhook di jalur `/webhook/kyumen/...` (lihat [n8n/README.md](n8n/README.md)).
-- Secret Edge Function: `ANTHROPIC_API_KEY`, `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, plus Vault `hive_webhook_secret` dan `hive_n8n_url`.
+Kyumen memakai project Supabase **ACHPHORIA** (`ckoejqzownrujikefgwb`) bersama ERP. Semua tabel Kyumen berawalan `hc_` dan dijaga RLS, jadi tidak menyentuh tabel ERP. Akun login (Supabase Auth) berbagi dengan ERP, tapi masuk Kyumen tetap wajib kode undangan (`hc_profiles`).
+
+- Migrasi: `supabase/migrations/` (dimulai dari `20261013070000_kyumen_base.sql`).
+- Edge Functions: `ryu`, `agent-chat` (verify JWT mati: dipanggil trigger & n8n dengan header `x-hive-secret`), `meeting-recap`, `livekit-token`.
+- Secret Edge Function yang wajib diisi di dashboard: `ANTHROPIC_API_KEY`, `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`.
+- Vault: `hive_n8n_url` (alamat n8n) dan `hive_webhook_secret` (dibuat acak; ambil nilainya lewat SQL Editor `select public.hive_webhook_secret();` lalu tempel di credential n8n "Kyumen Webhook Secret").
+- n8n: impor `n8n/workflows/kyumen-*.json` (webhook di jalur `/webhook/kyumen/...`), lihat [n8n/README.md](n8n/README.md).
+- Auth → URL Configuration: tambahkan `https://achphoria.github.io/kyumen/` ke Redirect URLs supaya link konfirmasi email kembali ke Kyumen.
 
 ## Struktur kode
 

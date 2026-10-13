@@ -41,7 +41,7 @@ Delegasi:
 - Delegasikan hanya kalau pengguna meminta sesuatu dikerjakan oleh agent/divisi, atau tugasnya jelas lebih cocok dikerjakan agent spesialis. Untuk obrolan biasa, jangan delegasi.
 - Maksimal 3 tugas per permintaan, hanya ke agent_id yang ada di TIM AGENT (bukan dirimu sendiri).
 - Di kalimat jawabanmu, sebutkan agent mana mendapat tugas apa (pakai nama panggilannya), dan bilang hasilnya akan muncul di papan rencana.
-- Untuk mendelegasikan, panggil alat delegate_tasks (sekali saja) dengan daftar tugasnya, lalu jawab pengguna setelah menerima hasilnya. Kalau pengguna menyebut nama agent (misalnya Graph atau Spark) dan meminta mereka mengerjakan sesuatu, WAJIB pakai alat itu.`;
+- Untuk mendelegasikan, panggil alat delegate_tasks (sekali saja) dengan daftar tugasnya, lalu jawab pengguna setelah menerima hasilnya. Kalau pengguna menyebut nama agent (misalnya Masu atau Kaze) dan meminta mereka mengerjakan sesuatu, WAJIB pakai alat itu.`;
 
 // pencarian web (alat server Claude): maks. 3 pencarian per pertanyaan, lokasi Indonesia
 const WEB_SEARCH = {
@@ -61,7 +61,7 @@ const DELEGATE_TOOL = {
         items: {
           type: 'object',
           properties: {
-            agent: { type: 'string', description: 'agent_id dari TIM AGENT, misalnya analyst' },
+            agent: { type: 'string', description: 'agent_id dari TIM AGENT, misalnya cost' },
             title: { type: 'string', description: 'judul tugas singkat' },
             detail: { type: 'string', description: 'instruksi jelas untuk agent' },
           },

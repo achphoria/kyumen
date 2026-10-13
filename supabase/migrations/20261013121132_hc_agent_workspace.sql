@@ -1,4 +1,4 @@
--- Applied to General Table on 20261013121132
+-- Kyumen (ACHPHORIA)
 -- Ruang Kerja Agent: akses staff x agent, riwayat chat, hasil tugas lengkap, alamat n8n di Vault
 
 -- 1) akses staff ke agent (owner otomatis akses penuh; staff baru kosong sampai diatur owner)
@@ -97,5 +97,7 @@ end $$;
 revoke all on function public.hc_approvals_notify_n8n() from public, anon, authenticated;
 
 select vault.create_secret('https://sliceable-mousiness-exorcist.ngrok-free.dev', 'hive_n8n_url', 'Alamat dasar n8n Kyumen (ngrok)');
+-- secret webhook Kyumen dibuat acak; samakan nilainya di credential n8n "Kyumen Webhook Secret"
+select vault.create_secret(encode(extensions.gen_random_bytes(24), 'hex'), 'hive_webhook_secret', 'Secret header x-hive-secret untuk webhook n8n Kyumen');
 
 alter publication supabase_realtime add table public.hc_agent_messages;

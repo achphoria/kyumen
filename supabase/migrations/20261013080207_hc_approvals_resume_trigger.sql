@@ -1,4 +1,4 @@
--- Applied to General Table on 20261013080207
+-- Kyumen, versi 20261013080207
 create or replace function public.hc_approvals_notify_n8n() returns trigger language plpgsql security definer set search_path = '' as $$
 declare s text;
 begin

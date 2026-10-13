@@ -46,7 +46,7 @@ begin
   if new.status is distinct from old.status and new.status in ('approved','rejected') then
     select decrypted_secret into s from vault.decrypted_secrets where name = 'hive_webhook_secret' limit 1;
     perform net.http_post(
-      url := 'https://ccbyqgisgclqlqatxwbk.supabase.co/functions/v1/agent-chat',
+      url := 'https://ckoejqzownrujikefgwb.supabase.co/functions/v1/agent-chat',
       body := jsonb_build_object('action', 'resume', 'approval_id', new.id, 'status', new.status),
       headers := jsonb_build_object('Content-Type','application/json','x-hive-secret', coalesce(s,'')),
       timeout_milliseconds := 5000);

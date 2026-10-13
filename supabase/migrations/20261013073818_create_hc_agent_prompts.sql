@@ -5,7 +5,7 @@ create table public.hc_agent_prompts (
  can_delegate boolean not null default false, needs_approval_for text[] not null default '{}',
  tools text[] not null default '{}', active boolean not null default true, updated_at timestamptz not null default now());
 alter table public.hc_agent_prompts enable row level security;
-create policy hc_agent_prompts_select on public.hc_agent_prompts for select to authenticated using ((select hc_my_role()) = any (array['owner','lead','staff']));
+create policy hc_agent_prompts_select on public.hc_agent_prompts for select to authenticated using ((select public.hc_my_role()) = any (array['owner','lead','staff']));
 insert into public.hc_agent_prompts (agent_id,nick,dept,system_prompt,needs_approval_for,tools) select a, n, d, 'Kamu agent naga di Kyuka Ramen Virtual (brand ramen Jepang dengan outlet, Central Kitchen, dan Main Warehouse). Jawab singkat dalam Bahasa Indonesia, jangan bertindak tanpa persetujuan untuk hal berisiko. Kamu adalah '||n||'. '||p, coalesce(ap,'{}'), coalesce(t,'{}') from (values
 ('store_mgr','Mochi','store','Store Manager: operasional outlet harian, checklist buka-tutup, jadwal shift kru, standar pelayanan, dan penanganan masalah outlet.',null::text[],null::text[]),
 ('trainer','Sensei','store','Store Trainer: susun SOP outlet (masak, penyajian, kebersihan), materi training kru baru, dan kuis standar penyajian ramen.',null,null),
