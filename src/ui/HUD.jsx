@@ -16,16 +16,7 @@ import { useAgentNet, useAgentScores, checkHealth } from '../hall/agentApi';
 const PHASE = { dispatch: 'Dikirim', gather: 'Berkumpul', work: 'Dikerjakan' };
 
 function Logo() {
-  return (
-    <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true">
-      <rect x="2" y="2" width="36" height="36" rx="9" fill="#22324F" />
-      <path d="M7 19h26a13 13 0 0 1-26 0z" fill="#E5483B" />
-      <path d="M11 15c2.5-4 5-4 7.5 0s5 4 7.5 0" fill="none" stroke="#F4EBDD" strokeWidth="2.4" strokeLinecap="round" />
-      <path d="M26 6l5-2-1.5 4.5" fill="#3B82D6" />
-      <circle cx="30" cy="10" r="3.2" fill="#3B82D6" />
-      <circle cx="31" cy="9.4" r="0.8" fill="#F4EBDD" />
-    </svg>
-  );
+  return <img className="brand-logo" src={`${import.meta.env.BASE_URL}logo.png`} alt="" width="40" height="40" aria-hidden="true" />;
 }
 
 function initials(name) {

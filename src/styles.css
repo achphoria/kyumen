@@ -1863,3 +1863,22 @@ body {
 .tool-rail-inline .tool {
   min-width: 70px;
 }
+
+/* logo resmi Kyuka Ramen */
+.brand-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex: none;
+  display: block;
+}
+.splash-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  animation: splash-pulse 1.4s ease-in-out infinite;
+}
+@keyframes splash-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}

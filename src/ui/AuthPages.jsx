@@ -18,12 +18,8 @@ function Shell({ title, sub, children }) {
             ← Kedai
           </button>
         )}
-        <div className="auth-logo" aria-hidden="true">
-          <svg viewBox="0 0 40 40" width="48" height="48">
-            <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="#2E4A7D" stroke="#8A5A00" strokeWidth="2.5" />
-            <rect x="9" y="16" width="22" height="3.5" fill="#22324F" />
-            <rect x="9" y="23" width="22" height="3.5" fill="#22324F" />
-          </svg>
+        <div className="auth-logo">
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Kyuka Ramen" width="96" height="96" />
         </div>
         <h1>{title}</h1>
         {sub && <p className="auth-sub">{sub}</p>}

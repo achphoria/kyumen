@@ -80,7 +80,7 @@ function Splash() {
   return (
     <div className="page auth-page">
       <div className="splash">
-        <span className="splash-hex" aria-hidden="true" />
+        <img className="splash-logo" src={`${import.meta.env.BASE_URL}logo.png`} alt="" width="56" height="56" aria-hidden="true" />
         Memuat Kyuka Ramen Virtual…
       </div>
     </div>
