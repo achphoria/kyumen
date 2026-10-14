@@ -12,6 +12,7 @@ import { useAi, checkAi } from '../hall/queenBea';
 import { useMeeting } from '../hall/meeting';
 import { PlazaBar } from './PlazaBar';
 import { useAgentNet, useAgentScores, checkHealth } from '../hall/agentApi';
+import { useSaver } from '../sim/saver';
 
 const PHASE = { dispatch: 'Dikirim', gather: 'Berkumpul', work: 'Dikerjakan' };
 
@@ -665,6 +666,8 @@ function PrimaryActions({ className = 'primary-actions', onPick }) {
 // alat tambahan, dipisah dari tombol utama
 function ToolRail({ className = 'panel tool-rail', onPick }) {
   const hasProfile = useHive((s) => !!s.profile);
+  const saver = useSaver((s) => s.on);
+  const owner = useAuth((s) => s.account?.role === 'owner');
   const tool = (icon, label, fn, title) => (
     <button
       className="tool"
@@ -682,6 +685,17 @@ function ToolRail({ className = 'panel tool-rail', onPick }) {
   return (
     <div className={className}>
       {tool('🎯', 'Reset kamera', () => useHive.getState().resetView())}
+      <button
+        className={`tool${saver ? ' on' : ''}`}
+        onClick={() => useSaver.getState().toggle()}
+        title="Mode hemat: tanpa efek cahaya & bayangan, untuk laptop/TV yang berat"
+        aria-pressed={saver}
+        aria-label="Mode hemat"
+      >
+        <span aria-hidden="true">⚡</span>
+        <em>{saver ? 'Hemat aktif' : 'Mode hemat'}</em>
+      </button>
+      {owner && tool('📊', 'Statistik', () => go('/statistik'))}
       {tool('📺', 'Mode TV', () => go('/tv'), 'Mode spectator untuk layar besar')}
       {tool('🧑', hasProfile ? 'Avatar saya' : 'Buat avatar', () => go('/avatar'))}
       {hasProfile && <DanceMenu onPick={onPick} />}

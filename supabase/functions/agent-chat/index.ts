@@ -9,6 +9,7 @@
 //   POST { action: 'routine_run', routine_id }                    -> { task_id }   (Jalankan sekarang, owner/Pelatih)
 //   POST { action: 'resume', approval_id, status } + x-hive-secret -> 202          (dari trigger hc_approvals)
 //   POST { action: 'routines' } + x-hive-secret                   -> { ran }       (dari n8n "Kyumen - Routine Tick")
+//   POST { action: 'usage' }                                      -> { used, limit } (kuota pesan harian saya)
 import Anthropic from 'npm:@anthropic-ai/sdk@0.128.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
 
@@ -188,6 +189,13 @@ async function runDueRoutines() {
   return ran;
 }
 
+// ---------- kuota pesan harian per staff (owner tanpa batas) ----------
+async function quota(sb: ReturnType<typeof createClient>, role: string) {
+  const [{ data: used }, { data: lim }] = await Promise.all([sb.rpc('hc_my_usage_today'), admin.from('hc_system_status').select('value').eq('key', 'limits').maybeSingle()]);
+  const limit = role === 'owner' ? 0 : Number(lim?.value?.daily_per_staff) || 0;
+  return { used: Number(used) || 0, limit };
+}
+
 // ---------- lampiran: teks dibaca langsung, gambar & PDF dibaca Claude ----------
 function base64(buf: Uint8Array) {
   let s = '';
@@ -272,6 +280,7 @@ Deno.serve(async (req) => {
 
   const body = await req.json().catch(() => ({}));
   if (body?.action === 'health') return json(await health());
+  if (body?.action === 'usage') return json(await quota(sb, me.role));
   // Jalankan sekarang (owner / Pelatih agent itu), jadwal rutin tidak berubah
   if (body?.action === 'routine_run') {
     const rid = String(body?.routine_id ?? '');
@@ -324,6 +333,10 @@ Deno.serve(async (req) => {
   let message = String(body?.message ?? '').trim().slice(0, MAX_MESSAGE);
   if (!message && files.length) message = 'Tolong pelajari lampiran ini.';
   if (!message) return json({ error: 'empty_message' }, 400);
+
+  const q = await quota(sb, me.role);
+  if (q.limit > 0 && q.used >= q.limit) return json({ error: 'daily_limit', ...q }, 429);
+  const quotaAfter = { used: q.used + 1, limit: q.limit };
 
   // percakapan: lanjutkan milik sendiri, atau buat baru
   let threadId = typeof body?.thread_id === 'string' ? body.thread_id : '';
@@ -410,5 +423,5 @@ Deno.serve(async (req) => {
 
   await admin.from('hc_agent_messages').insert({ thread_id: threadId, role, content: reply.slice(0, 20000), meta });
   await admin.from('hc_agent_threads').update({ updated_at: new Date().toISOString() }).eq('id', threadId);
-  return json({ thread_id: threadId, reply, status, meta });
+  return json({ thread_id: threadId, reply, status, meta, quota: quotaAfter });
 });

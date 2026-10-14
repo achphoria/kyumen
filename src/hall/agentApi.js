@@ -76,14 +76,19 @@ async function invoke(body, fallback) {
     } catch {
       /* bukan JSON */
     }
+    if (res.error === 'daily_limit') throw new Error(`Batas pesan harian kamu sudah habis (${res.used}/${res.limit}). Coba lagi besok, atau minta owner menaikkan batas.`);
     throw new Error(ERR[res.error] || fallback);
   }
   return data;
 }
 
 // kirim pesan (+ lampiran yang sudah diunggah); hasil: { thread_id, reply, status, meta }
-export function sendToAgent({ agent, message, threadId, files }) {
-  return invoke({ action: 'send', agent, message, thread_id: threadId || undefined, files: files?.length ? files : undefined }, 'Pesan gagal dikirim. Coba lagi.');
+// engine selalu 'claude' di Kyumen
+export function sendToAgent({ agent, message, threadId, files, engine }) {
+  return invoke(
+    { action: 'send', agent, message, thread_id: threadId || undefined, files: files?.length ? files : undefined, engine: agent === 'ceo' ? engine : undefined },
+    'Pesan gagal dikirim. Coba lagi.',
+  );
 }
 
 // Jadikan tugas untuk agent: kartu papan rencana yang langsung dikerjakan agent lewat n8n
@@ -238,7 +243,7 @@ export function runRoutineNow(id) {
 export function watchThread(threadId, onChange) {
   const ch = supabase
     .channel(`aw-thread-${threadId}`)
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'hc_agent_messages', filter: `thread_id=eq.${threadId}` }, onChange)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'hc_agent_messages', filter: `thread_id=eq.${threadId}` }, onChange)
     .subscribe();
   return () => supabase.removeChannel(ch);
 }
@@ -246,12 +251,65 @@ export function watchThread(threadId, onChange) {
 export async function loadThreads(agentId) {
   const { data } = await supabase
     .from('hc_agent_threads')
-    .select('id, title, user_id, updated_at')
+    .select('id, title, user_id, updated_at, pinned, task_id')
     .eq('agent_id', agentId)
+    .order('pinned', { ascending: false })
     .order('updated_at', { ascending: false })
-    .limit(40);
+    .limit(60);
   return data || [];
 }
+
+// ganti judul / sematkan percakapan milik sendiri
+export async function updateThread(id, patch) {
+  const row = {};
+  if (typeof patch.title === 'string') row.title = patch.title.replace(/\s+/g, ' ').trim().slice(0, 120) || 'Percakapan';
+  if (typeof patch.pinned === 'boolean') row.pinned = patch.pinned;
+  const { error } = await supabase.from('hc_agent_threads').update(row).eq('id', id);
+  if (error) throw new Error('Percakapan gagal diubah.');
+}
+
+// cari di semua percakapan yang boleh saya lihat (judul & isi pesan)
+export async function searchConversations(query) {
+  const q = query.replace(/[%_*,()\\]/g, ' ').trim();
+  if (q.length < 2) return [];
+  const [byMsg, byTitle] = await Promise.all([
+    supabase
+      .from('hc_agent_messages')
+      .select('id, thread_id, content, created_at, hc_agent_threads!inner(id, agent_id, title, user_id)')
+      .ilike('content', `%${q}%`)
+      .order('created_at', { ascending: false })
+      .limit(40),
+    supabase.from('hc_agent_threads').select('id, agent_id, title, user_id, updated_at').ilike('title', `%${q}%`).order('updated_at', { ascending: false }).limit(20),
+  ]);
+  const out = new Map();
+  for (const t of byTitle.data || []) out.set(t.id, { threadId: t.id, agent: t.agent_id, title: t.title, userId: t.user_id, snippet: '', at: t.updated_at });
+  for (const m of byMsg.data || []) {
+    const t = m.hc_agent_threads;
+    if (out.has(t.id) && out.get(t.id).snippet) continue;
+    const i = m.content.toLowerCase().indexOf(q.toLowerCase());
+    const snippet = `${i > 40 ? '…' : ''}${m.content.slice(Math.max(0, i - 40), i + q.length + 60).replace(/\s+/g, ' ')}…`;
+    out.set(t.id, { threadId: t.id, agent: t.agent_id, title: t.title, userId: t.user_id, snippet, at: m.created_at });
+  }
+  return [...out.values()].slice(0, 30);
+}
+
+// ---------- kuota & statistik ----------
+export function loadUsage() {
+  return invoke({ action: 'usage' }, 'Kuota gagal dimuat.').catch(() => null);
+}
+export async function loadStats(days) {
+  const { data, error } = await supabase.rpc('hc_agent_stats', { p_days: days });
+  if (error) throw new Error(error.message.includes('owner_only') ? 'Hanya owner yang bisa melihat statistik.' : 'Statistik gagal dimuat.');
+  return data;
+}
+export async function setDailyLimit(n) {
+  const { data, error } = await supabase.rpc('hc_set_limits', { p_daily: n });
+  if (error) throw new Error('Batas gagal disimpan.');
+  return data;
+}
+
+// Kyumen tidak memakai Grok Bot (kode dari Hive Colony tetap jalan dengan daftar kosong)
+export const GROK_AGENTS = [];
 
 export async function loadMessages(threadId) {
   const { data } = await supabase

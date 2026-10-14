@@ -1,5 +1,13 @@
 # Changelog
 
+## Tahap 3: fitur terbaru dari Hive Colony (tanpa Grok Bot)
+
+- **⚡ Mode hemat** di rak alat: tanpa efek cahaya & bayangan, resolusi 1x, untuk laptop/TV yang berat (tersimpan per browser).
+- **🗣 Mode percakapan suara** di Ruang Kerja: bicara, terkirim otomatis setelah diam ±1,5 detik, jawaban dibacakan, mikrofon menyala lagi; bisa disela dengan spasi.
+- **📊 Statistik** (owner, `#/statistik`): pesan per agent & staff, tugas, gagal, waktu balas, perkiraan token, grafik harian; **batas pesan harian per staff**.
+- **Ruang Kerja**: cari di semua percakapan, sematkan & ganti judul, unduh percakapan (.md), sisa kuota hari ini.
+- Database: migrasi `20261014090000_hc_stats_limits_threads.sql`; Edge Function `agent-chat` menegakkan kuota harian.
+
 ## Tahap 2: kru kedai, tangga, tebing, dan lebih ringan
 
 - Karakter dirombak total: agent AI, Ryu, dan avatar staff kini kru kedai ramen chibi (happi, celemek, baju koki, jinbei, kimono; hachimaki, tenugui, topi koki). Agent AI bermata biru menyala; Ryu berhaori navy dengan naga biru kecil (maskot) di bahu.
