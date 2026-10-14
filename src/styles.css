@@ -438,7 +438,6 @@ h2 {
   font-weight: 600;
   background: color-mix(in srgb, var(--c) 35%, white);
   border: 2px solid var(--c);
-  clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%);
 }
 .tags {
   display: flex;
@@ -995,7 +994,7 @@ body {
   font-weight: 600;
   background: color-mix(in srgb, var(--c, #e5483b) 40%, white);
   border: 2px solid var(--royal);
-  clip-path: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%);
+  border-radius: 14px;
 }
 .acct-actions {
   display: flex;
@@ -1822,14 +1821,6 @@ body {
   font-family: 'Fredoka', sans-serif;
   font-size: 18px;
   color: var(--ink-soft);
-}
-.splash-hex {
-  width: 28px;
-  height: 28px;
-  background: #2e4a7d;
-  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
-  animation: splash-spin 1.4s linear infinite;
-  color: #fff8ee;
 }
 @keyframes splash-spin {
   to {

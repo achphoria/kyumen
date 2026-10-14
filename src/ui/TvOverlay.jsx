@@ -134,11 +134,7 @@ export function TvOverlay() {
     <div className={`tv${ctrl ? ' tv-active' : ''}`}>
       <div className="tv-top">
         <div className="tv-brand">
-          <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true">
-            <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="#2E4A7D" stroke="#8A5A00" strokeWidth="2.5" />
-            <rect x="9" y="16" width="22" height="3.5" fill="#22324F" />
-            <rect x="9" y="23" width="22" height="3.5" fill="#22324F" />
-          </svg>
+          <img className="brand-logo" src={`${import.meta.env.BASE_URL}logo.png`} alt="" width="40" height="40" aria-hidden="true" />
           <div>
             <b>Kyuka Ramen</b>
             <span>{real ? 'Kantor virtual · mode real' : 'Kantor virtual · simulasi'}</span>

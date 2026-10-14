@@ -1403,9 +1403,9 @@
   color: #4a2a06;
 }
 .wticker-track em::before {
-  content: '⬢';
+  content: '●';
   margin-right: 10px;
-  color: #22324f;
+  color: #e5483b;
   font-size: 0.8em;
 }
 
