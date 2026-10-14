@@ -102,7 +102,10 @@ const CUES = [
   { at: 20, run: () => setFloor(2) },
   { at: 22.5, run: () => setFloor('all') },
   { at: 25, run: () => world.byId.ceo && setFloor(Math.max(tierOf(world.byId.ceo.pos.y), 2)) },
-  { at: 30.8, run: () => syncRealTasks(demoTasks('doing')) },
+  // bunyi pesan masuk tepat saat balasan Ryu muncul (IntroOverlay, detik 30.4),
+  // lalu tugas melesat ke Masu & Kaze bersamaan dengan daftar tugas di kartu chat (detik 31)
+  { at: 30.4, run: () => world.events.push('message') },
+  { at: 31, run: () => syncRealTasks(demoTasks('doing')) },
   { at: 32, run: () => setFloor('all') },
   { at: 47, run: () => setFloor(2) },
   { at: 55, run: () => setFloor('all') },

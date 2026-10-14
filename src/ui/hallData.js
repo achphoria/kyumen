@@ -52,7 +52,7 @@ export function feedText(e) {
     case 'guest':
       return 'Tamu masuk Genkan';
     case 'clock':
-      return e.text.startsWith('Malam') ? 'Malam: jaga malam aktif' : 'Pagi: kedai buka';
+      return e.text.startsWith('Malam') ? 'Malam: jaga malam aktif' : 'Pagi: kantor buka';
     default:
       return e.text;
   }
@@ -144,7 +144,7 @@ export function useHallData(me) {
           name: o.name || 'Staff',
           color: o.outfitColor,
           here: o.page === '/hall',
-          where: o.page === '/hall' ? 'rapat' : o.dancing ? 'joget di taman' : 'di kedai',
+          where: o.page === '/hall' ? 'rapat' : o.dancing ? 'joget di taman' : 'di kantor',
         })),
       ]
     : [

@@ -172,6 +172,11 @@ function noiseBurst(t, dur, from, to, gain) {
 }
 
 const SFX = {
+  // pesan chat masuk (dipakai Mode Intro saat balasan Ryu muncul)
+  message(t) {
+    note(hz(81), t, { type: 'sine', gain: 0.11, decay: 0.18, bus: sfxBus });
+    note(hz(88), t + 0.09, { type: 'sine', gain: 0.11, decay: 0.35, bus: sfxBus });
+  },
   dispatch(t) {
     const o = note(1046, t, { type: 'sine', gain: 0.13, decay: 0.35, bus: sfxBus });
     o.frequency.exponentialRampToValueAtTime(440, t + 0.3);

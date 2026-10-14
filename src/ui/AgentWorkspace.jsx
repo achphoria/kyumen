@@ -583,7 +583,7 @@ export function AgentWorkspace({ agentId }) {
     <div className="page aw-page">
       <header className="aw-top">
         <button className="back" onClick={() => go('/')}>
-          ← <span className="lbl">Kedai</span>
+          ← <span className="lbl">Kantor</span>
         </button>
         <h1>Ruang Kerja Agent</h1>
         {access.owner && (
@@ -1059,7 +1059,7 @@ export function AgentWorkspace({ agentId }) {
           )}
 
           <p className="aw-label">Peran</p>
-          <p className="aw-role">{agent === 'ceo' ? 'Chief: memimpin 18 agent, menjawab dengan data kedai, riset web, dan mendelegasikan tugas.' : prompt.split(`Kamu adalah ${def.nick}. `)[1] || def.role}</p>
+          <p className="aw-role">{agent === 'ceo' ? 'Chief: memimpin 18 agent, menjawab dengan data holding, riset web, dan mendelegasikan tugas.' : prompt.split(`Kamu adalah ${def.nick}. `)[1] || def.role}</p>
           {(level === 'owner' || level === 'train') && agent !== 'ceo' && prompt && (
             <details className="aw-prompt">
               <summary>Prompt lengkap yang dipakai agent</summary>

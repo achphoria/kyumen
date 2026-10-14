@@ -9,8 +9,8 @@ function buildSlides(r) {
   const max = Math.max(1, ...r.depts.map((d) => d.done));
   return [
     {
-      title: 'Ringkasan kedai hari ini',
-      say: `Halo semua. Hari ini kedai sudah menyelesaikan ${r.stats.done} misi dan menyajikan ${r.stats.honey} mangkuk ramen. Saat ini ${r.missions.length} misi sedang berjalan dan ${r.awake} dari 19 agent aktif.`,
+      title: 'Ringkasan holding hari ini',
+      say: `Halo semua. Hari ini holding sudah menyelesaikan ${r.stats.done} misi dan menyajikan ${r.stats.honey} mangkuk ramen. Saat ini ${r.missions.length} misi sedang berjalan dan ${r.awake} dari 19 agent aktif.`,
       body: (
         <div className="kpis">
           <div>
@@ -152,7 +152,7 @@ export function ReportView({ onClose }) {
         <div>
           <div className="slide">
             <div className="slide-meta">
-              Slide {i + 1} dari {slides.length} · Laporan kedai
+              Slide {i + 1} dari {slides.length} · Laporan holding
             </div>
             <h2>{s.title}</h2>
             {s.body}

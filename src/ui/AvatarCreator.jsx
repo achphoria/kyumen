@@ -83,7 +83,7 @@ export function AvatarCreator() {
       <div className="page-inner">
         <div className="page-head">
           <button className="back" onClick={() => go('/')}>
-            ← Kembali ke kedai
+            ← Kembali ke kantor
           </button>
           <div>
             <h1>{saved ? 'Ubah avatar kamu' : 'Buat avatar kamu'}</h1>
@@ -167,7 +167,7 @@ export function AvatarCreator() {
               <Swatches field="skin" value={p.skin} onPick={set('skin')} />
             </div>
             <div className="field">
-              <div className="field-label">Seragam kedai</div>
+              <div className="field-label">Seragam kru</div>
               <Chips field="outfit" value={p.outfit} onPick={set('outfit')} />
             </div>
             <div className="field">
@@ -191,7 +191,7 @@ export function AvatarCreator() {
               <Chips field="expr" value={p.expr} onPick={set('expr')} />
             </div>
             <button className="save" onClick={save} disabled={busy}>
-              {busy ? 'Menyimpan…' : account ? 'Simpan avatar ke akun' : 'Simpan dan masuk ke kedai'}
+              {busy ? 'Menyimpan…' : account ? 'Simpan avatar ke akun' : 'Simpan dan masuk ke kantor'}
             </button>
           </div>
         </div>

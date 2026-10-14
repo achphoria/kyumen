@@ -151,7 +151,7 @@ function AccountChip() {
 }
 
 const PAGE_LABEL = (p = '/') =>
-  p.startsWith('/hall') ? 'Ruang Tatami' : p.startsWith('/agent') ? 'Ruang kerja' : p.startsWith('/tv') ? 'Mode TV' : p.startsWith('/akses') ? 'Akses agent' : p.startsWith('/avatar') ? 'Ubah avatar' : 'Kedai';
+  p.startsWith('/hall') ? 'Ruang Tatami' : p.startsWith('/agent') ? 'Ruang kerja' : p.startsWith('/tv') ? 'Mode TV' : p.startsWith('/akses') ? 'Akses agent' : p.startsWith('/avatar') ? 'Ubah avatar' : 'Kantor';
 
 // siapa saja staff yang sedang online (Realtime Presence) dan sedang di halaman mana
 export function OnlineStaffList() {
@@ -329,7 +329,7 @@ function Brand() {
       <Logo />
       <div>
         <h1>Kyuka Ramen Virtual</h1>
-        <p>Kedai virtual {AGENTS.length} agent naga · {real ? 'mode real' : 'mode simulasi'}</p>
+        <p>Holding virtual · {AGENTS.length} agent AI · {real ? 'mode real' : 'mode simulasi'}</p>
       </div>
       <Clock />
       <SoundToggle />
@@ -504,7 +504,7 @@ function FloorSwitch({ onPick }) {
     <div className="floors">
       <button className={floor === 'all' ? 'on' : ''} onClick={() => setFloor('all')}>
         <b>Semua</b>
-        <span>Seluruh kedai</span>
+        <span>Seluruh kantor</span>
       </button>
       {TIERS.map((t) => (
         <button key={t.id} className={floor === t.id ? 'on' : ''} onClick={() => setFloor(t.id)}>
@@ -593,13 +593,13 @@ function MissionBoard({ className = 'panel board', onPick }) {
           Papan misi <em>{missions.length}</em>
         </button>
         <button className={tab === 'log' ? 'on' : ''} onClick={() => setTab('log')}>
-          Log kedai
+          Log holding
         </button>
       </div>
       {tab === 'active' ? (
         <div className="list">
           {missions.length === 0 && (
-            <p className="empty">{real ? 'Belum ada tugas yang sedang dikerjakan. Minta Ryu mendelegasikan tugas ke agent, nanti naganya bekerja di sini.' : 'Ryu sedang menyiapkan misi berikutnya…'}</p>
+            <p className="empty">{real ? 'Belum ada tugas yang sedang dikerjakan. Minta Ryu mendelegasikan tugas ke agent, nanti agentnya bekerja di sini.' : 'Ryu sedang menyiapkan misi berikutnya…'}</p>
           )}
           {missions.map((m) => (
             <button
@@ -913,7 +913,7 @@ function MobileHUD() {
       <div className={`scrim${drawer ? ' show' : ''}`} onClick={close} />
       <aside className={`drawer drawer-menu${drawer === 'menu' ? ' open' : ''}`} aria-hidden={drawer !== 'menu'}>
         <div className="drawer-head">
-          <h2>Menu kedai</h2>
+          <h2>Menu</h2>
           <button className="close" onClick={close} aria-label="Tutup menu">
             ×
           </button>
@@ -937,7 +937,7 @@ function MobileHUD() {
       </aside>
       <aside className={`drawer drawer-missions${drawer === 'missions' ? ' open' : ''}`} aria-hidden={drawer !== 'missions'}>
         <div className="drawer-head">
-          <h2>Misi kedai</h2>
+          <h2>Misi holding</h2>
           <button className="close" onClick={close} aria-label="Tutup papan misi">
             ×
           </button>

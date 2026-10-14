@@ -1,4 +1,4 @@
-// Bar "Ngobrol di kedai" (public mic) untuk staff yang login, di halaman kedai.
+// Bar "Ngobrol di kantor" (public mic) untuk staff yang login, di halaman kedai.
 import { useEffect } from 'react';
 import { useAuth } from '../sim/auth';
 import { usePlaza, startPlazaWatch, stopPlazaWatch } from '../sim/plaza';
@@ -24,10 +24,10 @@ export function PlazaBar() {
   if (p.state === 'on') {
     const talking = new Set(p.talking);
     return (
-      <div className="plaza on" role="region" aria-label="Obrolan kedai">
+      <div className="plaza on" role="region" aria-label="Obrolan kantor">
         <span className="plaza-live" aria-hidden="true" />
         <div className="plaza-people">
-          <b>Ngobrol di kedai</b>
+          <b>Ngobrol di kantor</b>
           <span>
             {p.peers.length === 0
               ? 'Menunggu yang lain bergabung…'
@@ -59,7 +59,7 @@ export function PlazaBar() {
     <div className="plaza">
       <button className="plaza-join" onClick={p.join} disabled={p.state === 'connecting'}>
         <span aria-hidden="true">{p.state === 'connecting' ? '⏳' : '🎙'}</span>
-        {p.state === 'connecting' ? 'Menyambungkan…' : p.waiting.length ? `${names(p.waiting)} sedang ngobrol · Gabung` : 'Ngobrol di kedai'}
+        {p.state === 'connecting' ? 'Menyambungkan…' : p.waiting.length ? `${names(p.waiting)} sedang ngobrol · Gabung` : 'Ngobrol di kantor'}
         {p.waiting.length > 0 && <span className="plaza-dot" aria-hidden="true" />}
       </button>
       {(p.error || p.notice) && <div className="plaza-msg">{p.error || p.notice}</div>}

@@ -15,7 +15,7 @@ function Shell({ title, sub, children }) {
       <div className="auth-card">
         {inside && (
           <button className="back" onClick={() => go('/')}>
-            ← Kedai
+            ← Kantor
           </button>
         )}
         <div className="auth-logo">
@@ -40,7 +40,7 @@ export function LoginPage() {
     return (
       <Shell title={`Halo, ${account.name}`} sub={`${ROLE_LABEL[account.role]} · ${DEPTS[account.primary_dept]?.name}`}>
         <button className="save" onClick={() => go('/')}>
-          Masuk ke kedai
+          Masuk ke kantor
         </button>
         <button className="link-btn" onClick={signOut}>
           Keluar dari akun
@@ -222,7 +222,7 @@ export function InvitePage() {
     return (
       <Shell title="Undang staff" sub="Hanya owner atau kepala divisi yang bisa membuat undangan. Staff baru wajib menonton video perkenalan (±80 detik) saat pertama kali masuk.">
         <button className="save" onClick={() => go(account ? '/' : '/login')}>
-          {account ? 'Kembali ke kedai' : 'Masuk dulu'}
+          {account ? 'Kembali ke kantor' : 'Masuk dulu'}
         </button>
       </Shell>
     );
@@ -265,7 +265,7 @@ export function InvitePage() {
       <div className="page-inner">
         <div className="page-head">
           <button className="back" onClick={() => go('/')}>
-            ← Kembali ke kedai
+            ← Kembali ke kantor
           </button>
           <div>
             <h1>Undang staff</h1>

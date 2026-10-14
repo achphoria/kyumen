@@ -40,7 +40,7 @@ export const AVATAR_OPTIONS = {
     ['#8D5524', 'Gelap'],
   ],
   outfit: [
-    ['happi', 'Happi kedai'],
+    ['happi', 'Happi kru'],
     ['apron', 'Kaos + celemek'],
     ['chef', 'Baju koki'],
     ['jinbei', 'Jinbei'],
@@ -59,7 +59,7 @@ export const AVATAR_OPTIONS = {
     ['hachimaki', 'Hachimaki'],
     ['towel', 'Tenugui'],
     ['bandana', 'Bandana'],
-    ['cap', 'Topi kedai'],
+    ['cap', 'Topi kru'],
     ['chefhat', 'Topi koki'],
   ],
   extra: [

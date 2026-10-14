@@ -26,7 +26,7 @@ export function dayPhase(h) {
 export const TIERS = [
   { id: 2, name: 'Lantai 3', sub: 'Ruang Chief & rapat' },
   { id: 1, name: 'Lantai 2', sub: 'Workspace 職場' },
-  { id: 0, name: 'Lantai 1', sub: 'Kedai & Supply Chain' },
+  { id: 0, name: 'Lantai 1', sub: 'Store & Supply Chain' },
 ];
 
 export const PALETTE = {
@@ -89,8 +89,8 @@ export const gridToWorld = (gx, row) => [gx * CELL, (row - 0.5) * CELL];
 const ROOMS = [
   // Lantai 1: kedai & ruang bersama (pojok belakang kanan = teras kayu menuju Main Warehouse)
   { id: 'store', name: 'Store Office', tier: 0, gx: -1, row: 1, kind: 'dept', dept: 'store', desc: 'Kantor tim outlet: store manager, trainer, planner, dan customer service.' },
-  { id: 'lobby', name: 'Genkan 玄関', tier: 0, gx: 0, row: 1, kind: 'lobby', desc: 'Pintu masuk kedai dan meja resepsionis.' },
-  { id: 'lounge', name: 'Kedai Kyuka', tier: 0, gx: 1, row: 1, kind: 'lounge', desc: 'Bar ramen, tempat kru istirahat sambil makan.' },
+  { id: 'lobby', name: 'Genkan 玄関', tier: 0, gx: 0, row: 1, kind: 'lobby', desc: 'Pintu masuk kantor dan meja resepsionis.' },
+  { id: 'lounge', name: 'Bar Ramen', tier: 0, gx: 1, row: 1, kind: 'lounge', desc: 'Bar ramen, tempat kru istirahat sambil makan.' },
   { id: 'gym', name: 'Dojo Latihan', tier: 0, gx: -1, row: 0, kind: 'gym', desc: 'Ruang latihan kru: teknik masak dan penyajian.' },
   { id: 'pods', name: 'Ruang Istirahat', tier: 0, gx: 0, row: 0, kind: 'pods', desc: 'Kapsul tidur ala Jepang untuk mengisi tenaga.' },
   { id: 'deck', name: 'Engawa', tier: 0, gx: 1, row: 0, kind: 'deck', desc: 'Teras kayu terbuka menuju jembatan Main Warehouse.' },
@@ -101,8 +101,8 @@ const ROOMS = [
   { id: 'mkt', name: 'Marketing Studio', tier: 1, gx: -1, row: 1, kind: 'dept', dept: 'mkt', desc: 'Konten, desain, iklan, dan komunitas.' },
   { id: 'fin', name: 'Finance Room', tier: 1, gx: 0, row: 1, kind: 'dept', dept: 'fin', desc: 'Pembukuan, food cost, dan analisis penjualan.' },
   { id: 'hr', name: 'HR Room', tier: 1, gx: 1, row: 1, kind: 'dept', dept: 'hr', desc: 'Rekrutmen, payroll, absensi, dan budaya kerja.' },
-  { id: 'mission', name: 'Papan Misi', tier: 1, gx: -1, row: 0, kind: 'mission', desc: 'Papan misi dan peta seluruh kedai.' },
-  { id: 'server', name: 'Ruang Server', tier: 1, gx: 0, row: 0, kind: 'server', desc: 'Rak server dan sistem kasir kedai.' },
+  { id: 'mission', name: 'Papan Misi', tier: 1, gx: -1, row: 0, kind: 'mission', desc: 'Papan misi dan peta seluruh holding.' },
+  { id: 'server', name: 'Ruang Server', tier: 1, gx: 0, row: 0, kind: 'server', desc: 'Rak server dan sistem kasir outlet.' },
   // Lantai 3: tatami
   { id: 'garden', name: 'Taman Zen', tier: 2, gx: -1, row: 1, kind: 'garden', desc: 'Taman batu di balkon atap, tempat mencari ide.' },
   { id: 'hall', name: 'Ruang Rapat Tatami', tier: 2, gx: 0, row: 1, kind: 'hall', desc: 'Ruang rapat lintas divisi dengan meja rendah.' },
@@ -367,7 +367,7 @@ export function statusText(st) {
     case 'desk':
       return st.missionId ? 'Mengerjakan misi' : 'Kerja rutin di meja';
     case 'break':
-      if (st.roomId === 'lounge') return 'Makan ramen di Kedai Kyuka';
+      if (st.roomId === 'lounge') return 'Makan ramen di Bar Ramen';
       if (st.roomId === 'gym') return 'Latihan di Dojo';
       if (st.roomId === 'garden') return 'Cari ide di Taman Zen';
       if (st.roomId === 'mission') return 'Memantau Papan Misi';

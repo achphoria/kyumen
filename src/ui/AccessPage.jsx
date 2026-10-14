@@ -40,7 +40,7 @@ export function AccessPage() {
           <h1>Akses agent</h1>
           <p>Hanya owner yang bisa mengatur akses staff ke agent AI.</p>
           <button className="save" onClick={() => go(account ? '/' : '/login')}>
-            {account ? 'Kembali ke kedai' : 'Masuk'}
+            {account ? 'Kembali ke kantor' : 'Masuk'}
           </button>
         </div>
       </div>

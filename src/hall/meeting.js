@@ -81,7 +81,7 @@ function derive() {
   useMeeting.setState((s) => ({
     active,
     people,
-    title: dbLive?.title || host?.title || (s.joined && s.title) || (active ? 'Rapat kedai' : ''),
+    title: dbLive?.title || host?.title || (s.joined && s.title) || (active ? 'Rapat holding' : ''),
     startedAt: (dbLive && new Date(dbLive.started_at).getTime()) || host?.startedAt || (s.joined && s.startedAt) || firstRoom,
   }));
 }
@@ -234,7 +234,7 @@ export const useMeeting = create((set, get) => ({
   clearNotice: () => set({ notice: '' }),
 
   start: async (title) => {
-    const t = (title.trim() || 'Rapat kedai').slice(0, 80);
+    const t = (title.trim() || 'Rapat holding').slice(0, 80);
     if (isLive()) {
       // hanya owner yang boleh membuka rapat (dijaga juga oleh RLS database)
       if (useAuth.getState().account?.role !== 'owner') {

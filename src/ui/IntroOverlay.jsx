@@ -69,7 +69,7 @@ export function IntroOverlay({ required = false }) {
       {/* 0–5: pembuka */}
       <Layer on={playing && t < 4.6} className="io-center">
         <Logo size={130} />
-        <p className={`io-q l1${t > 1.2 ? ' on' : ''}`}>Bagaimana kalau kedai kita punya</p>
+        <p className={`io-q l1${t > 1.2 ? ' on' : ''}`}>Bagaimana kalau holding kita punya</p>
         <p className={`io-q l2${t > 2.3 ? ' on' : ''}`}>
           <b>19 rekan kerja AI</b>?
         </p>
@@ -84,7 +84,7 @@ export function IntroOverlay({ required = false }) {
             </span>
           ))}
         </h1>
-        <p>Kantor virtual 仮想店舗 · 19 agent AI</p>
+        <p>Holding virtual · 19 agent AI</p>
       </Layer>
 
       {/* 15–25: lantai & divisi */}
@@ -299,7 +299,7 @@ export function IntroOverlay({ required = false }) {
             </button>
             {!required && (
               <button className="io-btn" onClick={() => go('/')}>
-                Kembali ke kedai
+                Kembali ke kantor
               </button>
             )}
           </div>
@@ -311,7 +311,7 @@ export function IntroOverlay({ required = false }) {
             ↺ Putar ulang
           </button>
           <button className="io-btn" onClick={() => go('/')}>
-            Kembali ke kedai
+            Kembali ke kantor
           </button>
         </div>
       )}
@@ -319,7 +319,7 @@ export function IntroOverlay({ required = false }) {
         <div className="io-start io-next">
           <h2>Siap mulai! 🎉</h2>
           <ol>
-            <li>Buat avatarmu supaya terlihat di kedai.</li>
+            <li>Buat avatarmu supaya terlihat di kantor.</li>
             <li>Buka <b>Portal saya</b> untuk melihat tugas dan rapatmu.</li>
             <li>Coba <b>Ruang Kerja</b>: agent yang boleh kamu pakai diatur owner.</li>
           </ol>

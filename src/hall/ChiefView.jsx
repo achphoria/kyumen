@@ -11,7 +11,7 @@ const STORE_KEY = 'kyumen.chiefChat';
 const WELCOME = {
   id: 'w',
   from: 'ceo',
-  text: 'Halo! Saya Ryu. Tanya apa saja soal kedai, atau lampirkan file (Excel, PDF, foto) untuk saya pelajari.',
+  text: 'Halo! Saya Ryu. Tanya apa saja soal holding, atau lampirkan file (Excel, PDF, foto) untuk saya pelajari.',
   files: [],
 };
 
@@ -354,7 +354,7 @@ export function ChiefView() {
       </div>
       <p className="demo-note">
         {live
-          ? 'Ryu dijawab Claude dengan data kedai asli dari database. Isi file lampiran belum bisa dibaca; itu menyusul di fase berikutnya.'
+          ? 'Ryu dijawab Claude dengan data holding asli dari database. Isi file lampiran belum bisa dibaca; itu menyusul di fase berikutnya.'
           : 'Mode demo: jawaban Ryu contoh. Login sebagai staff untuk ngobrol dengan Ryu versi AI (Claude).'}
       </p>
     </div>

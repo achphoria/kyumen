@@ -579,7 +579,7 @@ export function update(rawDt) {
   const night = isNightHour(world.clock);
   if (night !== world.night) {
     world.night = night;
-    log('clock', night ? 'Malam tiba. Agent Hybrid tidur, agent Full AI jaga malam.' : 'Pagi! Kedai bangun dan kembali bekerja.');
+    log('clock', night ? 'Malam tiba. Agent Hybrid tidur, agent Full AI jaga malam.' : 'Pagi! Kantor bangun dan kembali bekerja.');
   }
   for (const a of world.agents) stepAgent(a, dt);
   behaviours(dt);

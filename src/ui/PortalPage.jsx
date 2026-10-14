@@ -142,7 +142,7 @@ export function PortalPage() {
     <div className="page aw-page pt-page">
       <header className="aw-top">
         <button className="back" onClick={() => go('/')}>
-          ← <span className="lbl">Kedai</span>
+          ← <span className="lbl">Kantor</span>
         </button>
         <h1>Portal saya</h1>
         <button className="hbtn" onClick={() => go('/agent')}>

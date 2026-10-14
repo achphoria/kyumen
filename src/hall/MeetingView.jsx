@@ -134,7 +134,7 @@ export function MeetingView({ onLeave, onReport }) {
     <div className="meet">
       <div className="meet-head">
         <div>
-          <h2>{m.title || 'Rapat kedai'}</h2>
+          <h2>{m.title || 'Rapat holding'}</h2>
           <span>
             {elapsed} berjalan · {m.people.length + m.aiGuests.length + 1} peserta
           </span>

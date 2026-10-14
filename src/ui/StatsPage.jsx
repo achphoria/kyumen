@@ -45,7 +45,7 @@ export function StatsPage() {
           <h1>Statistik agent</h1>
           <p>Hanya owner yang bisa melihat statistik pemakaian.</p>
           <button className="save" onClick={() => go('/')}>
-            Kembali ke kedai
+            Kembali ke kantor
           </button>
         </div>
       </div>

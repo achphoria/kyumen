@@ -36,7 +36,7 @@ export function buildAnswer(kind) {
   const lowest = [...s.missions].sort((a, b) => a.progress - b.progress)[0];
   if (kind === 'kondisi') {
     return {
-      q: 'Ryu, gimana kondisi kedai sekarang?',
+      q: 'Ryu, gimana kondisi holding sekarang?',
       a: `Saat ini ${s.missions.length} misi sedang berjalan, ${s.stats.done} misi sudah selesai, dan ${s.stats.honey} mangkuk sudah tersaji. ${
         pending.length ? `Ada ${pending.length} persetujuan yang menunggu keputusan.` : 'Tidak ada persetujuan yang menunggu.'
       }`,
@@ -100,7 +100,7 @@ export function chiefReply(text, files) {
   } else if (/setuj|approval|persetujuan/.test(t)) {
     parts.push(r.pending.length ? `Ada ${r.pending.length} persetujuan menunggu: ${r.pending.map((a) => a.title).join('; ')}.` : 'Semua persetujuan sudah diputuskan.');
   } else if (!files.length) {
-    parts.push('Siap, saya catat. Untuk sekarang saya masih mode demo, jadi jawaban saya terbatas pada data kedai. Coba tanya soal kondisi kedai, yang macet, atau persetujuan.');
+    parts.push('Siap, saya catat. Untuk sekarang saya masih mode demo, jadi jawaban saya terbatas pada data holding. Coba tanya soal kondisi holding, yang macet, atau persetujuan.');
   }
   return parts.join(' ');
 }

@@ -61,7 +61,7 @@ function useCaptionStatus(c) {
   }
   if (c.type === 'staff') {
     const w = outdoor.byId[c.id] || outdoor.walkers.find((x) => x.id === c.id);
-    return w ? DOING[w.state] || 'di kedai' : 'di kedai';
+    return w ? DOING[w.state] || 'di kantor' : 'di kantor';
   }
   return c.sub;
 }

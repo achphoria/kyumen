@@ -287,7 +287,7 @@ function MeetingBanner({ onJoin, onArchive }) {
     <button className="live-banner" onClick={onJoin}>
       <span className="live-dot" />
       <span className="live-text">
-        <b>{m.title || 'Rapat kedai'}</b> · {count || 1} orang · {mins} menit · AI mentranskrip
+        <b>{m.title || 'Rapat holding'}</b> · {count || 1} orang · {mins} menit · AI mentranskrip
       </span>
       <span className="live-join">Gabung</span>
     </button>
@@ -340,7 +340,7 @@ function ActionDock({ onAction }) {
           : 'Buka ruang rapat. Ryu ikut mencatat dan membuat notulen di akhir.',
       soon: locked,
     },
-    { id: 'report', ic: '📊', bg: '#F4EBDD', title: 'Presentasi report', sub: 'Ryu mempresentasikan laporan kedai.' },
+    { id: 'report', ic: '📊', bg: '#F4EBDD', title: 'Presentasi report', sub: 'Ryu mempresentasikan laporan holding.' },
     { id: 'chief', ic: '🐉', bg: '#DCE6F4', title: 'Ngobrol dengan Chief', sub: 'Chat dengan lampiran, atau ngobrol pakai suara.' },
   ];
   return (
@@ -424,9 +424,9 @@ export function HallView() {
       <button
         className="back"
         onClick={() => (mode !== 'lobby' && tab === 'lobi' ? setMode('lobby') : go('/'))}
-        aria-label={mode !== 'lobby' && tab === 'lobi' ? 'Kembali ke lobi' : 'Kembali ke kedai'}
+        aria-label={mode !== 'lobby' && tab === 'lobi' ? 'Kembali ke lobi' : 'Kembali ke kantor'}
       >
-        ← <span className="lbl">{mode !== 'lobby' && tab === 'lobi' ? 'Lobi' : 'Kedai'}</span>
+        ← <span className="lbl">{mode !== 'lobby' && tab === 'lobi' ? 'Lobi' : 'Kantor'}</span>
       </button>
       <div className="hall-title">
         <h1>{mode !== 'lobby' && tab === 'lobi' ? VIEW_TITLE[mode] : 'Ruang Tatami'}</h1>

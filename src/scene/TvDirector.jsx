@@ -20,7 +20,7 @@ function orbitShot() {
   setFloor('all');
   const a0 = rand(0, Math.PI * 2);
   const dir = Math.random() < 0.5 ? 1 : -1;
-  useTv.setState({ caption: { type: 'orbit', kicker: 'Kyuka Ramen Virtual', title: 'Kedai 仮想店舗', sub: 'Kantor virtual 19 agent AI' } });
+  useTv.setState({ caption: { type: 'orbit', kicker: 'Kyuka Ramen Virtual', title: 'Holding virtual', sub: 'Kantor virtual 19 agent AI' } });
   return {
     type: 'orbit',
     dur: rand(16, 20),
@@ -53,7 +53,7 @@ function floorShot() {
 function sweepShot() {
   setFloor('all');
   const dir = Math.random() < 0.5 ? 1 : -1;
-  useTv.setState({ caption: { type: 'orbit', kicker: 'Dermaga', title: 'Kyuka Ramen', sub: 'Kedai, Central Kitchen & Main Warehouse' } });
+  useTv.setState({ caption: { type: 'orbit', kicker: 'Dermaga', title: 'Kyuka Ramen', sub: 'Kantor, Central Kitchen & Main Warehouse' } });
   return {
     type: 'sweep',
     dur: rand(12, 15),
