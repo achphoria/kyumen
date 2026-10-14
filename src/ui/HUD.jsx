@@ -659,6 +659,11 @@ function PrimaryActions({ className = 'primary-actions', onPick }) {
         <b>Ruang Kerja</b>
         <small>Chat & tugas agent</small>
       </button>
+      <button className="pa-btn portal" onClick={() => nav('/saya')}>
+        <span aria-hidden="true">🙋</span>
+        <b>Portal saya</b>
+        <small>Kanban, tugas & rapat</small>
+      </button>
     </div>
   );
 }
@@ -696,6 +701,7 @@ function ToolRail({ className = 'panel tool-rail', onPick }) {
         <em>{saver ? 'Hemat aktif' : 'Mode hemat'}</em>
       </button>
       {owner && tool('📊', 'Statistik', () => go('/statistik'))}
+      {tool('🎬', 'Intro', () => go('/intro'), 'Video perkenalan Kyuka Ramen (±80 detik), siap direkam')}
       {tool('📺', 'Mode TV', () => go('/tv'), 'Mode spectator untuk layar besar')}
       {tool('🧑', hasProfile ? 'Avatar saya' : 'Buat avatar', () => go('/avatar'))}
       {hasProfile && <DanceMenu onPick={onPick} />}

@@ -1,5 +1,12 @@
 # Changelog
 
+## Tahap 4: Portal saya & Mode Intro (dari Hive Colony)
+
+- **🙋 Portal saya** (`#/saya`, tombol ketiga di kedai): kanban tugas tim + to-do pribadi, tugas saya ke agent beserta hasilnya, percakapan & hasil tersimpan, rapat & tindak lanjut untuk saya. Kartu "Portal karyawan" di Ruang Tatami dihapus.
+- **🎬 Mode Intro** (`#/intro`, tombol di rak alat): video perkenalan ±80 detik langsung dari scene 3D kedai, naskah Kyumen (5 divisi, Ryu mendelegasikan ke Masu & Kaze, Ruang Tatami, Portal saya, kerja 24 jam, statistik). Siap direkam: F layar penuh, `#/intro?t=30`.
+- **SOP staff baru**: staff yang baru mendaftar wajib menonton intro sekali, lalu diarahkan membuat avatar. Akun lama tidak dipaksa.
+- Database: `assignee` & `created_by` di tugas papan rencana, tabel to-do pribadi `hc_todos`, `intro_seen_at` di profil.
+
 ## Tahap 3: fitur terbaru dari Hive Colony (tanpa Grok Bot)
 
 - **⚡ Mode hemat** di rak alat: tanpa efek cahaya & bayangan, resolusi 1x, untuk laptop/TV yang berat (tersimpan per browser).

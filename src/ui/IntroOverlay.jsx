@@ -1,0 +1,353 @@
+// Teks & kartu animasi di atas Mode Intro (#/intro). Waktunya mengikuti IntroDirector (useIntro.t).
+// Siap direkam: kursor & tombol hilang selama diputar, tombol muncul lagi di akhir.
+import { useEffect, useState } from 'react';
+import { DEPTS } from '../data/hive';
+import { useIntro, INTRO_LEN } from '../sim/intro';
+import { go } from './nav';
+import { useAuth } from '../sim/auth';
+import { markIntroSeen } from '../hall/portalApi';
+
+const DEPT_IDS = ['store', 'scm', 'mkt', 'fin', 'hr'];
+// #/intro?t=30 -> mulai dari detik ke-30 (merekam ulang satu bagian)
+const startFrom = () => {
+  const v = Number(new URLSearchParams(window.location.hash.split('?')[1] || '').get('t'));
+  return Number.isFinite(v) && v > 0 && v < INTRO_LEN ? v : 0;
+};
+const between = (t, a, b) => t >= a && t < b;
+// teks muncul huruf demi huruf antara detik a dan b
+const typed = (text, t, a, b) => text.slice(0, Math.round(text.length * Math.max(0, Math.min(1, (t - a) / (b - a)))));
+
+// logo resmi Kyuka Ramen (pengganti ikon heksagon versi awal)
+function Logo({ size = 120, draw = true }) {
+  return <img className={`io-logo${draw ? ' draw' : ''}`} src={`${import.meta.env.BASE_URL}logo.png`} width={size} height={size} alt="" aria-hidden="true" />;
+}
+
+// satu lapisan per adegan; "on" mengatur fade masuk/keluar
+function Layer({ on, className = '', children }) {
+  return <div className={`io-layer ${className}${on ? ' on' : ''}`}>{children}</div>;
+}
+
+const Headline = ({ on, children, pos = 'bl' }) => <div className={`io-headline ${pos}${on ? ' on' : ''}`}>{children}</div>;
+
+// required: staff baru yang belum pernah menonton (wajib sekali, tidak bisa dilewati)
+export function IntroOverlay({ required = false }) {
+  const account = useAuth((s) => s.account);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+  const from = () => (required ? 0 : startFrom());
+  const status = useIntro((s) => s.status);
+  const t = useIntro((s) => s.t);
+  const clock = useIntro((s) => s.clock);
+  const playing = status === 'playing';
+
+  // F = layar penuh, Esc keluar dari layar penuh (bawaan browser), Spasi = putar/ulang
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'f' || e.key === 'F') {
+        if (document.fullscreenElement) document.exitFullscreen?.();
+        else document.documentElement.requestFullscreen?.().catch(() => {});
+      }
+      if (e.code === 'Space' && useIntro.getState().status !== 'playing') {
+        e.preventDefault();
+        useIntro.getState().start(required ? 0 : startFrom());
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+  useEffect(() => () => useIntro.getState().reset(), []);
+
+  const hh = String(Math.floor(clock)).padStart(2, '0');
+  const mm = String(Math.floor((clock % 1) * 60)).padStart(2, '0');
+  const black = status === 'ready' ? 1 : t < 4.2 ? 1 : t < 5.6 ? 1 - (t - 4.2) / 1.4 : t > INTRO_LEN - 1.5 ? Math.min(1, (t - (INTRO_LEN - 1.5)) / 1.3) : 0;
+
+  return (
+    <div className={`intro${playing ? ' playing' : ''}`}>
+      <div className="io-bars" aria-hidden="true" />
+      <div className="io-black" style={{ opacity: black }} />
+
+      {/* 0–5: pembuka */}
+      <Layer on={playing && t < 4.6} className="io-center">
+        <Logo size={130} />
+        <p className={`io-q l1${t > 1.2 ? ' on' : ''}`}>Bagaimana kalau kedai kita punya</p>
+        <p className={`io-q l2${t > 2.3 ? ' on' : ''}`}>
+          <b>19 rekan kerja AI</b>?
+        </p>
+      </Layer>
+
+      {/* 5–15: judul */}
+      <Layer on={between(t, 6, 14.4)} className="io-title">
+        <h1>
+          {'KYUKA RAMEN'.split('').map((ch, i) => (
+            <span key={i} style={{ animationDelay: `${0.06 * i}s` }}>
+              {ch === ' ' ? '\u00a0' : ch}
+            </span>
+          ))}
+        </h1>
+        <p>Kantor virtual 仮想店舗 · 19 agent AI</p>
+      </Layer>
+
+      {/* 15–25: lantai & divisi */}
+      <Layer on={between(t, 15.3, 24.6)} className="io-depts">
+        <div className="io-stat">
+          <span>
+            <b>5</b> divisi
+          </span>
+          <i />
+          <span>
+            <b>18</b> agent
+          </span>
+          <i />
+          <span>
+            <b>1</b> Chief
+          </span>
+        </div>
+        <div className="io-chips">
+          {DEPT_IDS.map((d, i) => (
+            <span key={d} className={t > 16 + i * 1.1 ? 'on' : ''} style={{ '--c': DEPTS[d].color }}>
+              {DEPTS[d].name}
+            </span>
+          ))}
+        </div>
+      </Layer>
+
+      {/* 25–37: Ryu mendelegasikan */}
+      <Layer on={between(t, 25.4, 36.6)} className="io-chat">
+        <div className="io-card">
+          <div className="io-card-head">
+            <span className="io-av">🐉</span>
+            <b>Ryu</b>
+            <em>Chief</em>
+          </div>
+          <div className="io-bubble me">
+            {typed('Masu, hitung HPP menu ramen baru. Kaze, siapkan promo Ramen Day.', t, 25.8, 29.6)}
+            {t < 29.6 && <span className="io-caret" />}
+          </div>
+          <div className={`io-bubble ai${t > 30.4 ? ' on' : ''}`}>Siap! Tugas sudah saya kirim ke Masu dan Kaze.</div>
+          <div className="io-tasks">
+            <span className={t > 31 ? 'on' : ''}>→ Masu · HPP menu baru</span>
+            <span className={t > 31.5 ? 'on' : ''}>→ Kaze · Promo Ramen Day</span>
+          </div>
+        </div>
+      </Layer>
+      <Headline on={between(t, 32.4, 36.6)}>
+        Satu perintah,
+        <br />
+        tim langsung bergerak
+      </Headline>
+
+      {/* 37–47: Ruang Kerja */}
+      <Layer on={between(t, 37.3, 46.6)} className="io-dim" />
+      <Layer on={between(t, 37.3, 46.6)} className="io-cards3">
+        <div className="io-card io-slide" style={{ '--d': '0s' }}>
+          <p className="io-kicker">Lampiran</p>
+          <div className="io-file">
+            <i>PDF</i>
+            <span>laporan-oktober.pdf</span>
+          </div>
+          <div className="io-bubble ai on small">Ringkasan: penjualan tonkotsu naik, keluhan terbanyak soal waktu tunggu.</div>
+        </div>
+        <div className="io-card io-slide" style={{ '--d': '0.5s' }}>
+          <p className="io-kicker">Mode percakapan suara</p>
+          <div className="io-orb" />
+          <div className="io-wave">
+            {Array.from({ length: 18 }, (_, i) => (
+              <i key={i} style={{ animationDelay: `${(i % 6) * 0.11}s` }} />
+            ))}
+          </div>
+        </div>
+        <div className="io-card io-slide" style={{ '--d': '1s' }}>
+          <p className="io-kicker">Dilatih tim sendiri</p>
+          <div className="io-rate">
+            <span>👍</span>
+            <span>👎</span>
+          </div>
+          <div className="io-bubble ai on small">Koreksi staff jadi pelajaran agent.</div>
+        </div>
+      </Layer>
+      <Headline on={between(t, 38.5, 46.6)} pos="tl">
+        Ngobrol, kirim file,
+        <br />
+        bicara langsung
+      </Headline>
+
+      {/* 47–55: Ruang Tatami */}
+      <Layer on={between(t, 47.4, 54.6)} className="io-chat">
+        <div className="io-card">
+          <p className="io-kicker">Ruang Tatami · rapat suara</p>
+          <div className="io-people">
+            {['A', 'R', 'D', '🐉'].map((p, i) => (
+              <span key={p} className={(Math.floor(t * 1.4) + i) % 4 === 0 ? 'talk' : ''}>
+                {p}
+              </span>
+            ))}
+          </div>
+          <p className="io-kicker">Notulen otomatis · Ryu</p>
+          <ul className="io-notes">
+            <li>{typed('Ramen Day dimulai 1 November', t, 48.5, 50.2)}</li>
+            <li>{typed('Kaze menyiapkan materi iklan', t, 50.4, 52)}</li>
+            <li>{typed('Masu cek food cost sebelum Jumat', t, 52.2, 53.8)}</li>
+          </ul>
+        </div>
+      </Layer>
+      <Headline on={between(t, 48.8, 54.6)}>
+        Rapat selesai,
+        <br />
+        notulen sudah jadi
+      </Headline>
+
+      {/* 55–62: Portal saya */}
+      <Layer on={between(t, 55.4, 61.6)} className="io-chat">
+        <div className="io-card io-portal">
+          <div className="io-card-head">
+            <span className="io-av">🙋</span>
+            <b>Portal saya</b>
+            <em>Selamat pagi, Rina 👋</em>
+          </div>
+          <div className="io-kanban">
+            {[
+              ['todo', 'Belum'],
+              ['doing', 'Jalan'],
+              ['done', 'Selesai'],
+            ].map(([col, label]) => {
+              const moving = t < 57.6 ? 'todo' : t < 59.6 ? 'doing' : 'done';
+              return (
+                <div key={col} className="io-kcol">
+                  <span>{label}</span>
+                  {col === 'todo' && <i>Balas review Google</i>}
+                  {col === moving && (
+                    <i key={moving} className="hot">
+                      Siapkan materi promo
+                    </i>
+                  )}
+                  {col === 'done' && <i>Rekap absensi</i>}
+                </div>
+              );
+            })}
+          </div>
+          <div className="io-locks">
+            <span>🍜 Masu · HPP menu baru ✓</span>
+            <span>📝 Tindak lanjut rapat untukmu</span>
+          </div>
+        </div>
+      </Layer>
+      <Headline on={between(t, 56.4, 61.6)}>
+        Pekerjaanmu,
+        <br />
+        satu halaman
+      </Headline>
+
+      {/* 62–70: bekerja 24 jam */}
+      <Layer on={between(t, 62.4, 69.8)} className="io-clock">
+        <b>
+          {hh}
+          <span>:</span>
+          {mm}
+        </b>
+        <p>WIB</p>
+        <div className={`io-toast${t > 68.6 ? ' on' : ''}`}>✓ Tugas rutin 08:00 · Checklist buka toko</div>
+      </Layer>
+      <Headline on={between(t, 63.5, 69.8)}>Bekerja 24 jam</Headline>
+
+      {/* 70–77: terkendali */}
+      <Layer on={between(t, 70.4, 76.6)} className="io-chat">
+        <div className="io-card">
+          <p className="io-kicker">Statistik owner</p>
+          <div className="io-bars-chart">
+            {[0.55, 0.8, 0.4, 0.95, 0.65, 0.75].map((h, i) => (
+              <i key={i} style={{ '--h': h, animationDelay: `${0.1 * i}s` }} />
+            ))}
+          </div>
+          <div className="io-locks">
+            <span>🔐 Login wajib</span>
+            <span>🔑 Akses per staff</span>
+            <span>📊 Kuota harian</span>
+          </div>
+        </div>
+      </Layer>
+      <Headline on={between(t, 71.2, 76.6)}>
+        Terpantau, terkendali,
+        <br />
+        aman
+      </Headline>
+
+      {/* 77–82: penutup */}
+      <Layer on={between(t, 77.4, INTRO_LEN + 1) && status !== 'ready'} className="io-center io-end">
+        <Logo size={110} draw={false} />
+        <h2>KYUKA RAMEN</h2>
+        <p>Tim AI yang dilatih oleh tim kita sendiri</p>
+      </Layer>
+
+      {/* layar mulai & akhir (tidak ikut terekam saat diputar) */}
+      {status === 'ready' && (
+        <div className="io-start">
+          <Logo size={90} draw={false} />
+          {required ? (
+            <>
+              <h2>Selamat datang, {account?.name?.split(' ')[0] || 'rekan baru'}! 👋</h2>
+              <p>Sebelum mulai, tonton dulu video perkenalan Kyuka Ramen Virtual (±80 detik). Wajib sekali untuk staff baru, supaya kamu tahu cara bekerja bersama Ryu dan 18 agent AI kita.</p>
+            </>
+          ) : (
+            <>
+              <h2>Video perkenalan Kyuka Ramen Virtual</h2>
+              <p>±80 detik. Tekan F untuk layar penuh, lalu mulai rekam layar (Win+Alt+R atau OBS) sebelum menekan Putar.</p>
+            </>
+          )}
+          <div className="io-actions">
+            <button className="io-btn pri" onClick={() => useIntro.getState().start(from())}>
+              ▶ Putar{from() ? ` dari detik ${from()}` : ''}
+            </button>
+            {!required && (
+              <button className="io-btn" onClick={() => go('/')}>
+                Kembali ke kedai
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      {status === 'done' && !required && (
+        <div className="io-actions io-after">
+          <button className="io-btn pri" onClick={() => useIntro.getState().start()}>
+            ↺ Putar ulang
+          </button>
+          <button className="io-btn" onClick={() => go('/')}>
+            Kembali ke kedai
+          </button>
+        </div>
+      )}
+      {status === 'done' && required && (
+        <div className="io-start io-next">
+          <h2>Siap mulai! 🎉</h2>
+          <ol>
+            <li>Buat avatarmu supaya terlihat di kedai.</li>
+            <li>Buka <b>Portal saya</b> untuk melihat tugas dan rapatmu.</li>
+            <li>Coba <b>Ruang Kerja</b>: agent yang boleh kamu pakai diatur owner.</li>
+          </ol>
+          {err && <p className="io-err">{err}</p>}
+          <div className="io-actions">
+            <button
+              className="io-btn pri"
+              disabled={saving}
+              onClick={async () => {
+                setSaving(true);
+                setErr('');
+                try {
+                  await markIntroSeen();
+                  go('/avatar');
+                } catch (e) {
+                  setErr(e.message);
+                  setSaving(false);
+                }
+              }}
+            >
+              {saving ? 'Menyimpan…' : 'Mulai pakai Kyumen →'}
+            </button>
+            <button className="io-btn" onClick={() => useIntro.getState().start()}>
+              ↺ Putar ulang
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

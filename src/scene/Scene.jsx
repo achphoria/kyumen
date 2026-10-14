@@ -7,6 +7,7 @@ import { Agents, Island, Harbor, Roofs, WestTerrace, Bridges, Effects, CameraRig
 import { OutdoorStaff } from './StaffAvatar';
 import { DayNight } from './DayNight';
 import { TvDirector } from './TvDirector';
+import { IntroDirector } from './IntroDirector';
 import { SkyDome, CloudSea } from './Atmosphere';
 import { WarmEnvironment, LookFX, useQuality } from './Look';
 import { useSaver } from '../sim/saver';
@@ -41,7 +42,7 @@ function ShadowThrottle({ hz = 3 }) {
 }
 
 // tv: mode spectator untuk layar besar (kamera dikendalikan TvDirector)
-export function Scene({ tv = false }) {
+export function Scene({ tv = false, intro = false }) {
   const quality = useQuality();
   const saver = useSaver((s) => s.on);
   return (
@@ -75,7 +76,7 @@ export function Scene({ tv = false }) {
         maxPolarAngle={1.4}
         target={[3, 6, 2]}
       />
-      {tv ? <TvDirector /> : <CameraRig />}
+      {intro ? <IntroDirector /> : tv ? <TvDirector /> : <CameraRig />}
     </>
   );
 }

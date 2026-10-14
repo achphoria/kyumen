@@ -4,9 +4,11 @@ import { Scene } from './scene/Scene';
 import { HUD, useAutoSound } from './ui/HUD';
 import { HallView } from './ui/HallView';
 import { TvOverlay } from './ui/TvOverlay';
+import { IntroOverlay } from './ui/IntroOverlay';
 import { AgentWorkspace } from './ui/AgentWorkspace';
 import { AccessPage } from './ui/AccessPage';
 import { StatsPage } from './ui/StatsPage';
+import { PortalPage } from './ui/PortalPage';
 import { useSaver } from './sim/saver';
 import { startAgentWatch, stopAgentWatch } from './hall/agentApi';
 import { AvatarCreator } from './ui/AvatarCreator';
@@ -25,7 +27,7 @@ import { PerformanceMonitor } from '@react-three/drei';
 // Resolusi render menyesuaikan kemampuan perangkat: turun otomatis kalau frame mulai tersendat.
 const MAX_DPR = Math.min(1.5, window.devicePixelRatio || 1);
 
-function Tower({ tv = false }) {
+function Tower({ tv = false, intro = false, required = false }) {
   const [dpr, setDpr] = useState(MAX_DPR);
   const saver = useSaver((s) => s.on);
   return (
@@ -44,10 +46,10 @@ function Tower({ tv = false }) {
           onFallback={() => setDpr(0.75)}
         />
         <Suspense fallback={null}>
-          <Scene tv={tv} />
+          <Scene tv={tv} intro={intro} />
         </Suspense>
       </Canvas>
-      {tv ? <TvOverlay /> : <HUD />}
+      {intro ? <IntroOverlay required={required} /> : tv ? <TvOverlay /> : <HUD />}
     </div>
   );
 }
@@ -113,15 +115,20 @@ export function App() {
   // pengembangan saja: lihat kedai 3D tanpa login (#/demo), dibuang dari build publik
   if (import.meta.env.DEV && route === '/demo') return <Tower />;
   if (import.meta.env.DEV && route === '/demo-avatar') return <AvatarCreator />;
+  if (import.meta.env.DEV && route === '/demo-intro') return <Tower intro />;
   // wajib login: tanpa sesi hanya halaman masuk & daftar dengan kode undangan
   if (route === '/join') return <JoinPage />;
   if (!ready) return <Splash />;
   if (!session) return <LoginPage />;
   if (!account) return needsInvite ? <JoinPage /> : <Splash />;
+  // SOP staff baru: video perkenalan wajib ditonton sekali sebelum masuk ke mana pun
+  if (!account.intro_seen_at) return <Tower intro required />;
   if (route === '/tv') return <Tower tv />;
+  if (route === '/intro') return <Tower intro />;
   if (route === '/agent' || route.startsWith('/agent/')) return <AgentWorkspace agentId={route.split('/')[2] || 'ceo'} />;
   if (route === '/akses') return <AccessPage />;
   if (route === '/statistik') return <StatsPage />;
+  if (route === '/saya') return <PortalPage />;
   if (route === '/hall') return <HallView />;
   if (route === '/avatar') return <AvatarCreator />;
   if (route === '/login') return <LoginPage />;
