@@ -206,11 +206,10 @@ TEMPLATES = {
 # selain itu tampil seperti template bawaan Supabase. Ganti isi ELSE_* dengan template ERP
 # kalau ERP memakai template sendiri.
 KYUMEN_REDIRECT = 'https://achphoria.github.io/kyumen/#/login'
-ELSE_CONFIRM = '''<h2>Confirm your signup</h2>
-
-<p>Follow this link to confirm your user:</p>
-<p><a href="{{ .ConfirmationURL }}">Confirm your mail</a></p>
-'''
+# template ERP SEMAR yang sedang dipakai di ACHPHORIA (bagian 'else')
+ELSE_CONFIRM = (Path(__file__).parent / 'semar-confirm-signup.html').read_text(encoding='utf-8')
+# Subject gabungan (Supabase juga memproses variabel di Subject)
+SUBJECT = '{{ if eq .RedirectTo "' + KYUMEN_REDIRECT + '" }}Konfirmasi akun Kyuka Ramen 🍜{{ else }}Konfirmasi email Anda · SEMAR{{ end }}'
 
 
 def shared(kyumen_html, fallback):
@@ -224,3 +223,5 @@ if __name__ == '__main__':
         print('ditulis', name)
     (here / 'achphoria-confirm-signup.html').write_text(shared(page(**TEMPLATES['confirm-signup.html']), ELSE_CONFIRM), encoding='utf-8')
     print('ditulis achphoria-confirm-signup.html')
+    (here / 'achphoria-confirm-signup.subject.txt').write_text(SUBJECT, encoding='utf-8')
+    print('ditulis achphoria-confirm-signup.subject.txt')
