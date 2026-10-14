@@ -201,8 +201,26 @@ TEMPLATES = {
     ),
 }
 
+# Template gabungan untuk project Supabase ACHPHORIA (dipakai bersama ERP):
+# pendaftaran dari Kyumen (emailRedirectTo di src/sim/auth.js) tampil bertema Kyuka Ramen,
+# selain itu tampil seperti template bawaan Supabase. Ganti isi ELSE_* dengan template ERP
+# kalau ERP memakai template sendiri.
+KYUMEN_REDIRECT = 'https://achphoria.github.io/kyumen/#/login'
+ELSE_CONFIRM = '''<h2>Confirm your signup</h2>
+
+<p>Follow this link to confirm your user:</p>
+<p><a href="{{ .ConfirmationURL }}">Confirm your mail</a></p>
+'''
+
+
+def shared(kyumen_html, fallback):
+    return '{{ if eq .RedirectTo "' + KYUMEN_REDIRECT + '" }}\n' + kyumen_html + '{{ else }}\n' + fallback + '{{ end }}\n'
+
+
 if __name__ == '__main__':
     here = Path(__file__).parent
     for name, t in TEMPLATES.items():
         (here / name).write_text(page(**t), encoding='utf-8')
         print('ditulis', name)
+    (here / 'achphoria-confirm-signup.html').write_text(shared(page(**TEMPLATES['confirm-signup.html']), ELSE_CONFIRM), encoding='utf-8')
+    print('ditulis achphoria-confirm-signup.html')
