@@ -1,0 +1,112 @@
+{{ if eq .RedirectTo "https://achphoria.github.io/kyumen/#/login" }}
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Undangan ke Kyuka Ramen</title>
+  </head>
+  <body style="margin:0;padding:0;background:#F4EBDD;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Kamu diundang bergabung ke Kyuka Ramen Virtual. Satu klik untuk masuk.</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F4EBDD" style="background:#F4EBDD;">
+      <tr>
+        <td align="center" style="padding:32px 14px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+            <!-- kepala navy: logo + noren -->
+            <tr>
+              <td align="center" bgcolor="#1C2F5A" style="background:#1C2F5A;border-radius:22px 22px 0 0;padding:30px 24px 22px;">
+                <img src="https://achphoria.github.io/kyumen/email-logo.png" width="96" height="96" alt="Kyuka Ramen" style="display:block;border:0;border-radius:22px;" />
+                <div style="font-family:'Fredoka','Trebuchet MS',Arial,sans-serif;font-size:13px;letter-spacing:4px;color:#9CC8FF;padding-top:14px;">INVITATION</div>
+              </td>
+            </tr>
+            <tr>
+              <td bgcolor="#1C2F5A" style="background:#1C2F5A;font-size:0;line-height:0;padding:0 26px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td width="33%" height="18" bgcolor="#E5483B" style="background:#E5483B;border-radius:0 0 10px 10px;">&nbsp;</td>
+                    <td width="2%">&nbsp;</td>
+                    <td width="30%" height="18" bgcolor="#E5483B" style="background:#E5483B;border-radius:0 0 10px 10px;">&nbsp;</td>
+                    <td width="2%">&nbsp;</td>
+                    <td width="33%" height="18" bgcolor="#E5483B" style="background:#E5483B;border-radius:0 0 10px 10px;">&nbsp;</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- isi -->
+            <tr>
+              <td bgcolor="#FFFBF5" style="background:#FFFBF5;padding:30px 32px 6px;border-left:1px solid #E6D6BC;border-right:1px solid #E6D6BC;">
+                <div style="font-family:'Fredoka','Trebuchet MS',Arial,sans-serif;font-size:30px;line-height:34px;color:#E5483B;font-weight:600;">ご招待</div>
+                <h1 style="margin:6px 0 0;font-family:'Fredoka','Trebuchet MS',Arial,sans-serif;font-size:24px;line-height:31px;color:#22324F;font-weight:600;">Halo {{ .Data.name }}, kamu diundang! 🏮</h1>
+                <p style="margin:12px 0 0;font-family:'Nunito','Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:23px;color:#22324F;">Tim sudah menyiapkan akun Kyuka Ramen Virtual untuk <b>{{ .Email }}</b>. Klik tombol di bawah untuk langsung masuk. Divisi dan peranmu sudah diatur, kamu tinggal membuat password.</p>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" bgcolor="#FFFBF5" style="background:#FFFBF5;padding:24px 32px 8px;border-left:1px solid #E6D6BC;border-right:1px solid #E6D6BC;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td align="center" bgcolor="#E5483B" style="background:#E5483B;border-radius:999px;box-shadow:0 6px 0 #B3362B;">
+                      <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:15px 38px;font-family:'Fredoka','Trebuchet MS',Arial,sans-serif;font-size:17px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px;">Terima undangan &rarr;</a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" bgcolor="#FFFBF5" style="background:#FFFBF5;padding:6px 32px 0;border-left:1px solid #E6D6BC;border-right:1px solid #E6D6BC;font-family:'Nunito','Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:#6B7A92;">
+                Akun: <b style="color:#22324F;">{{ .Email }}</b>
+              </td>
+            </tr>
+            <tr>
+              <td bgcolor="#FFFBF5" style="background:#FFFBF5;padding:22px 32px 6px;border-left:1px solid #E6D6BC;border-right:1px solid #E6D6BC;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFFFFF" style="background:#FFFFFF;border:1px dashed #D9C7A6;border-radius:16px;">
+                  <tr>
+                    <td style="padding:16px 18px 6px;">
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+          <td width="34" valign="top" style="padding:0 0 10px;">
+            <div style="width:24px;height:24px;line-height:24px;border-radius:12px;background:#1C2F5A;color:#ffffff;font-family:'Fredoka','Trebuchet MS',Arial,sans-serif;font-size:13px;font-weight:600;text-align:center;">1</div>
+          </td>
+          <td valign="top" style="padding:2px 0 10px;font-family:'Nunito','Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;line-height:21px;color:#22324F;">Klik Terima undangan, kamu langsung masuk.</td>
+        </tr><tr>
+          <td width="34" valign="top" style="padding:0 0 10px;">
+            <div style="width:24px;height:24px;line-height:24px;border-radius:12px;background:#1C2F5A;color:#ffffff;font-family:'Fredoka','Trebuchet MS',Arial,sans-serif;font-size:13px;font-weight:600;text-align:center;">2</div>
+          </td>
+          <td valign="top" style="padding:2px 0 10px;font-family:'Nunito','Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;line-height:21px;color:#22324F;">Buat password untuk masuk berikutnya.</td>
+        </tr><tr>
+          <td width="34" valign="top" style="padding:0 0 10px;">
+            <div style="width:24px;height:24px;line-height:24px;border-radius:12px;background:#1C2F5A;color:#ffffff;font-family:'Fredoka','Trebuchet MS',Arial,sans-serif;font-size:13px;font-weight:600;text-align:center;">3</div>
+          </td>
+          <td valign="top" style="padding:2px 0 10px;font-family:'Nunito','Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;line-height:21px;color:#22324F;">Kenalan dengan Ryu dan agent di divisimu di Ruang Kerja.</td>
+        </tr></table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td bgcolor="#FFFBF5" style="background:#FFFBF5;padding:18px 32px 28px;border-left:1px solid #E6D6BC;border-right:1px solid #E6D6BC;border-bottom:1px solid #E6D6BC;border-radius:0 0 22px 22px;">
+                <p style="margin:0;font-family:'Nunito','Segoe UI',Helvetica,Arial,sans-serif;font-size:12.5px;line-height:19px;color:#6B7A92;">Tombol tidak bisa diklik? Salin tautan ini ke browser:<br />
+                  <a href="{{ .ConfirmationURL }}" target="_blank" style="color:#2E4A7D;word-break:break-all;">{{ .ConfirmationURL }}</a>
+                </p>
+              </td>
+            </tr>
+            <!-- kaki -->
+            <tr>
+              <td align="center" style="padding:22px 20px 0;font-family:'Nunito','Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;line-height:19px;color:#6B7A92;">
+                <div style="font-family:'Fredoka','Trebuchet MS',Arial,sans-serif;font-size:14px;color:#22324F;letter-spacing:1px;">🐉 KYUKA RAMEN VIRTUAL 🍜</div>
+                <div style="padding-top:2px;">キュウカ ラーメン バーチャル 「仮想店舗」</div>
+                <div style="padding-top:10px;">Kamu menerima email ini karena admin Kyuka Ramen Virtual mengundang alamat ini. Tidak merasa diundang? Abaikan saja, akun tidak aktif tanpa klik link di atas.</div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
+{{ else }}
+<h2>You have been invited</h2>
+
+<p>You have been invited to create a user on {{ .SiteURL }}. Follow this link to accept the invite:</p>
+<p><a href="{{ .ConfirmationURL }}">Accept the invite</a></p>
+{{ end }}

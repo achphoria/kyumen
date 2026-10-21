@@ -185,18 +185,18 @@ TEMPLATES = {
     ),
     'invite-user.html': dict(
         title='Undangan ke Kyuka Ramen',
-        preheader='Kamu diundang bergabung ke Kyuka Ramen Virtual.',
+        preheader='Kamu diundang bergabung ke Kyuka Ramen Virtual. Satu klik untuk masuk.',
         kanji='ご招待',
         kana='INVITATION',
-        heading='Kamu diundang ke kedai! 🏮',
-        intro='Kamu diundang bergabung ke Kyuka Ramen Virtual, kantor virtual tempat staff bekerja bersama Ryu dan 18 agent naga. Klik tombol di bawah untuk menerima undangan.',
+        heading='Halo {{ .Data.name }}, kamu diundang! 🏮',
+        intro='Tim sudah menyiapkan akun Kyuka Ramen Virtual untuk <b>{{ .Email }}</b>. Klik tombol di bawah untuk langsung masuk. Divisi dan peranmu sudah diatur, kamu tinggal membuat password.',
         button='Terima undangan',
         steps=[
-            'Buat password untuk akun kamu.',
-            'Masukkan kode undangan dari owner atau kepala divisi.',
-            'Kenalan dengan agent di divisimu di Ruang Kerja.',
+            'Klik Terima undangan, kamu langsung masuk.',
+            'Buat password untuk masuk berikutnya.',
+            'Kenalan dengan Ryu dan agent di divisimu di Ruang Kerja.',
         ],
-        footnote='Kamu menerima email ini karena seseorang mengundang alamat ini ke Kyuka Ramen Virtual.',
+        footnote='Kamu menerima email ini karena admin Kyuka Ramen Virtual mengundang alamat ini. Tidak merasa diundang? Abaikan saja, akun tidak aktif tanpa klik link di atas.',
         extra=EMAIL_BOX,
     ),
 }
@@ -208,6 +208,13 @@ TEMPLATES = {
 KYUMEN_REDIRECT = 'https://achphoria.github.io/kyumen/#/login'
 # template ERP SEMAR yang sedang dipakai di ACHPHORIA (bagian 'else')
 ELSE_CONFIRM = (Path(__file__).parent / 'semar-confirm-signup.html').read_text(encoding='utf-8')
+# undangan bawaan Supabase untuk undangan di luar Kyumen (ERP)
+ELSE_INVITE = '''<h2>You have been invited</h2>
+
+<p>You have been invited to create a user on {{ .SiteURL }}. Follow this link to accept the invite:</p>
+<p><a href="{{ .ConfirmationURL }}">Accept the invite</a></p>
+'''
+INVITE_SUBJECT = '{{ if eq .RedirectTo "' + KYUMEN_REDIRECT + '" }}Undangan ke Kyuka Ramen Virtual 🏮{{ else }}You have been invited{{ end }}'
 # Subject gabungan (Supabase juga memproses variabel di Subject)
 SUBJECT = '{{ if eq .RedirectTo "' + KYUMEN_REDIRECT + '" }}Konfirmasi akun Kyuka Ramen 🍜{{ else }}Konfirmasi email Anda · SEMAR{{ end }}'
 
@@ -225,3 +232,8 @@ if __name__ == '__main__':
     print('ditulis achphoria-confirm-signup.html')
     (here / 'achphoria-confirm-signup.subject.txt').write_text(SUBJECT, encoding='utf-8')
     print('ditulis achphoria-confirm-signup.subject.txt')
+    # undangan dari halaman Employee (Edge Function employee-invite, redirectTo = KYUMEN_REDIRECT)
+    (here / 'achphoria-invite-user.html').write_text(shared(page(**TEMPLATES['invite-user.html']), ELSE_INVITE), encoding='utf-8')
+    print('ditulis achphoria-invite-user.html')
+    (here / 'achphoria-invite-user.subject.txt').write_text(INVITE_SUBJECT, encoding='utf-8')
+    print('ditulis achphoria-invite-user.subject.txt')
