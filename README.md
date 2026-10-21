@@ -1,8 +1,8 @@
-# Kyuka Ramen Virtual (Kyumen)
+# KYUMEN Holding (Kyuka Ramen)
 
 キュウカ ラーメン バーチャル 「仮想店舗」
 
-Kantor virtual 3D untuk brand **Kyuka Ramen**: kedai Jepang 3 lantai di dermaga, berisi 19 agent AI berbentuk naga biru chibi dan staff manusia. Dikembangkan dari kode Hive Colony, lalu diganti total temanya.
+Kantor virtual 3D untuk brand **Kyuka Ramen**: **KYUMEN Holding**, kompleks Jepang bertingkat yang menempel di muka tebing di atas lautan awan, berisi 19 agent AI berbentuk naga biru chibi dan staff manusia. Dikembangkan dari kode Hive Colony, lalu diganti total temanya.
 
 Situs (setelah GitHub Pages aktif): https://achphoria.github.io/kyumen/
 
@@ -17,14 +17,18 @@ Situs (setelah GitHub Pages aktif): https://achphoria.github.io/kyumen/
 | 💰 Finance | Koban (Accounting), Masu (Cost Control / HPP), Zeni (Sales & Cashier Analyst) |
 | 🧑‍💼 HR | Tama (HR Manager), Aoi (Recruitment), Kiku (Payroll & Absensi), Sakura (People & Culture) |
 
-## Denah kedai
+## Denah KYUMEN Holding
 
 | Lantai | Ruangan |
 |---|---|
-| Lantai 3 | Ruang Rapat Tatami, Ruang Chief, Taman Zen |
-| Lantai 2 (Workspace 職場) | Marketing Studio, Finance Room, HR Room, Papan Misi |
-| Lantai 1 | Genkan, Store Office, Kedai Kyuka (bar ramen), Dojo Latihan, Ruang Istirahat, Ruang Server |
-| Gedung samping | Central Kitchen, Main Warehouse |
+| Puncak tebing | Ruang Chief (paviliun Ryu), Taman Zen |
+| Lantai 4 | Marketing Studio, Ruang Rapat Tatami, Finance Room |
+| Lantai 3 | Dojo Latihan, Ruang Server, Papan Misi |
+| Lantai 2 | Store Office, Ruang Istirahat, HR Room |
+| Lantai 1 | Genkan, Bar Ramen, Engawa |
+| Tebing seberang (jembatan tali dari Engawa) | Central Kitchen, Main Warehouse |
+
+Tiap lantai punya selasar kayu di depan; antar lantai ada tangga zig-zag di sisi tebing. Tamu naik tangga batu dari balik awan ke Genkan.
 
 ## Fitur (warisan Hive Colony)
 

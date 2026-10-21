@@ -347,8 +347,8 @@ function Brand() {
     <header className="panel brand">
       <Logo />
       <div>
-        <h1>Kyuka Ramen Virtual</h1>
-        <p>Holding virtual · {AGENTS.length} agent AI · {real ? 'mode real' : 'mode simulasi'}</p>
+        <h1>KYUMEN Holding</h1>
+        <p>Kyuka Ramen · {AGENTS.length} agent AI · {real ? 'mode real' : 'mode simulasi'}</p>
       </div>
       <Clock />
       <SoundToggle />
@@ -425,7 +425,7 @@ function MobileBrand({ onAvatar }) {
   return (
     <header className="panel brand mobile-brand">
       <Logo />
-      <h1>Kyumen</h1>
+      <h1>KYUMEN</h1>
       <button className="m-status" onClick={onAvatar} aria-label={`${online} staff online, server ${SERVER_LABEL[level]}`}>
         <i className={`srv-dot ${level}`} />
         {online}
@@ -736,7 +736,7 @@ function ToolRail({ className = 'panel tool-rail', onPick }) {
         <em>{saver ? 'Hemat aktif' : 'Mode hemat'}</em>
       </button>
       {owner && tool('📊', 'Statistik', () => go('/statistik'))}
-      {tool('🎬', 'Intro', () => go('/intro'), 'Video perkenalan Kyuka Ramen (±80 detik), siap direkam')}
+      {tool('🎬', 'Intro', () => go('/intro'), 'Video perkenalan KYUMEN Holding (±96 detik), siap direkam')}
       {tool('📺', 'Mode TV', () => go('/tv'), 'Mode spectator untuk layar besar')}
       {tool('🧑', hasProfile ? 'Avatar saya' : 'Buat avatar', () => go('/avatar'))}
       {hasProfile && <DanceMenu onPick={onPick} />}

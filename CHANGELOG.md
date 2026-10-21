@@ -1,5 +1,13 @@
 # Changelog
 
+## Tahap 6: KYUMEN Holding di tebing awan
+
+- **Dunia 3D baru**: kedai dermaga diganti **KYUMEN Holding**, bangunan Jepang 4 lantai + paviliun puncak di muka tebing, di atas lautan awan. 16 ruangan yang sama, denah baru (lihat README), selasar & tangga zig-zag untuk jalur agent, jembatan tali ke Central Kitchen & Main Warehouse, tangga batu tamu dari balik awan, naga penjaga, air terjun.
+- **Video intro baru** (`#/intro`, ±96 detik): naik menembus awan, judul KYUMEN Holding dengan huruf dari blur & kilau cahaya, tur 5 lantai, Ryu membagi tugas ke 4 agent, Workshop (tiket + roda progres), rapat video & notulen, Portal + dock, Employee mengirim undangan, time-lapse malam, statistik. Motion: sapuan lentera merah di setiap bab, kartu berputar masuk, angka menghitung naik, judul adegan kata per kata.
+- Mode TV memakai sudut kamera baru (busur depan, crane per lantai, naga).
+- Nama tampil diganti **KYUMEN Holding** (judul situs, HUD, Mode TV, manifest, pesan login).
+- Tidak ada perubahan database atau Edge Function.
+
 ## Tahap 5: semua fitur final Hive Colony (tanpa Grok Bot)
 
 - **🐉 Ryu ketua tim** (Claude Sonnet 5.5): permintaan kerja dipecah sendiri ke maks. 5 agent tanpa bertanya siapa yang mengerjakan; Ryu membaca hasil tugas 2 hari terakhir; begitu semua tugas paket selesai, rekap + lampiran (laporan .md, poster SVG untuk paket visual) dikirim otomatis ke percakapan.
@@ -16,7 +24,7 @@
 ## Tahap 4: Portal saya & Mode Intro (dari Hive Colony)
 
 - **🙋 Portal saya** (`#/saya`, tombol ketiga di kedai): kanban tugas tim + to-do pribadi, tugas saya ke agent beserta hasilnya, percakapan & hasil tersimpan, rapat & tindak lanjut untuk saya. Kartu "Portal karyawan" di Ruang Tatami dihapus.
-- **🎬 Mode Intro** (`#/intro`, tombol di rak alat): video perkenalan ±80 detik langsung dari scene 3D kedai, naskah Kyumen (5 divisi, Ryu mendelegasikan ke Masu & Kaze, Ruang Tatami, Portal saya, kerja 24 jam, statistik). Siap direkam: F layar penuh, `#/intro?t=30`.
+- **🎬 Mode Intro** (`#/intro`, tombol di rak alat): video perkenalan ±80 detik langsung dari scene 3D kedai (diganti di Tahap 6), naskah Kyumen (5 divisi, Ryu mendelegasikan ke Masu & Kaze, Ruang Tatami, Portal saya, kerja 24 jam, statistik). Siap direkam: F layar penuh, `#/intro?t=30`.
 - **SOP staff baru**: staff yang baru mendaftar wajib menonton intro sekali, lalu diarahkan membuat avatar. Akun lama tidak dipaksa.
 - Database: `assignee` & `created_by` di tugas papan rencana, tabel to-do pribadi `hc_todos`, `intro_seen_at` di profil.
 

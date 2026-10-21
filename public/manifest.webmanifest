@@ -1,7 +1,7 @@
 {
-  "name": "Kyuka Ramen Virtual",
+  "name": "KYUMEN Holding",
   "short_name": "Kyumen",
-  "description": "Kantor virtual 3D kedai ramen dengan 19 agent AI.",
+  "description": "KYUMEN Holding: kantor virtual 3D Kyuka Ramen di atas awan dengan 19 agent AI.",
   "start_url": "/kyumen/",
   "scope": "/kyumen/",
   "display": "standalone",

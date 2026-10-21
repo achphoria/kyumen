@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
-import { HALF, WALL_H, TIER_GAP, SEATS_BY_ROOM, DEPTS, doorSides } from '../data/hive';
+import { HALF, WALL_H, SEATS_BY_ROOM, DEPTS, doorSides } from '../data/hive';
 import { useHive } from '../sim/store';
 import { world } from '../sim/engine';
 import { M, std, Cyl, Sph } from './materials';
@@ -195,8 +195,8 @@ export function Room({ room }) {
   const isGarden = room.kind === 'garden' || room.kind === 'deck'; // ruang terbuka berpagar rendah
   const doors = doorSides(room.id);
   const wallH = isGarden ? 0.55 : WALL_H;
-  // tiang sudut setinggi lantai berikutnya supaya kedai tampak seperti satu bangunan
-  const postH = room.tier === 2 || room.id === 'ck' || room.id === 'wh' ? 3.1 : TIER_GAP - 0.4;
+  // tiang sudut sampai emper atap lantai ini (tiap lantai punya atap sendiri di muka tebing)
+  const postH = WALL_H + 0.45;
   const showPosts = room.kind !== 'garden';
 
   useFrame((st, dt) => {

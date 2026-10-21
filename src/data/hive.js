@@ -1,14 +1,15 @@
-// Kyuka Ramen Virtual (Kyumen): struktur kedai, agent naga, dan misi simulasi.
+// KYUMEN Holding (Kyuka Ramen): denah kantor di tebing, agent naga, dan misi simulasi.
 
-export const CELL = 9.6; // jarak antar ruangan (grid kotak)
+export const CELL = 9.6; // jarak antar ruangan sejajar di satu lantai
 export const HALF = 4.6; // setengah lebar lantai ruangan (kotak)
 export const ROOM_R = 4.7; // radius acuan furnitur di dalam ruangan
 export const APOTHEM = HALF; // jarak dinding dari tengah ruangan
-export const TIER_GAP = 5.6;
+export const TIER_GAP = 7.2; // jarak antar lantai (cukup untuk atap & balok penyangga)
 export const WALL_H = 1.8;
-export const SIDE_X = 24; // gedung Central Kitchen & Main Warehouse di dermaga kanan
+export const TOP_TIER = 4;
+export const SIDE_X = 26; // tebing seberang: Central Kitchen & Main Warehouse
 export const tierY = (t) => t * TIER_GAP;
-export const tierOf = (y) => Math.max(0, Math.min(2, Math.floor((y + 1.5) / TIER_GAP)));
+export const tierOf = (y) => Math.max(0, Math.min(TOP_TIER, Math.floor((y + 1.5) / TIER_GAP)));
 
 // Siklus siang-malam
 export const DAY_LEN = 240; // detik simulasi untuk satu hari penuh
@@ -24,9 +25,11 @@ export function dayPhase(h) {
 }
 
 export const TIERS = [
-  { id: 2, name: 'Lantai 3', sub: 'Ruang Chief & rapat' },
-  { id: 1, name: 'Lantai 2', sub: 'Workspace 職場' },
-  { id: 0, name: 'Lantai 1', sub: 'Store & Supply Chain' },
+  { id: 4, name: 'Puncak', sub: 'Ryu & Taman Zen' },
+  { id: 3, name: 'Lantai 4', sub: 'Marketing · Tatami · Finance' },
+  { id: 2, name: 'Lantai 3', sub: 'Dojo · Server · Papan Misi' },
+  { id: 1, name: 'Lantai 2', sub: 'Store · Istirahat · HR' },
+  { id: 0, name: 'Lantai 1', sub: 'Genkan · Bar Ramen · Engawa' },
 ];
 
 export const PALETTE = {
@@ -91,52 +94,55 @@ export function resolveAgent(who) {
 // Agent yang tetap bekerja saat malam (jaga malam)
 export const NIGHT_SHIFT = new Set(AGENTS.filter((a) => a.mode !== 'Hybrid').map((a) => a.id));
 
-/* ---------- denah: grid kotak, gx = kolom (-1..1), row = 0 belakang / 1 depan ---------- */
+/* ---------- denah: KYUMEN Holding di muka tebing ----------
+   Tiap lantai satu baris ruangan (gx -1..1) menghadap depan (+z), tebing di belakangnya (z < -HALF).
+   Di depan tiap lantai ada selasar kayu; antar lantai ada tangga zig-zag di sisi tebing (bergantian
+   barat/timur). Central Kitchen & Main Warehouse di tebing seberang (timur), lewat jembatan dari Engawa. */
 
-export const gridToWorld = (gx, row) => [gx * CELL, (row - 0.5) * CELL];
+export const gridToWorld = (gx) => [gx * CELL, 0];
+export const CLIFF_Z = -HALF - 0.7; // muka tebing (belakang ruangan)
+export const GAL = { z0: HALF + 0.05, z1: HALF + 2.5, x0: -CELL - HALF - 2.2, x1: CELL + HALF + 2.2 }; // selasar depan
+export const GAL_Z = (GAL.z0 + GAL.z1) / 2; // garis jalan di selasar
 
 const ROOMS = [
-  // Lantai 1: kedai & ruang bersama (pojok belakang kanan = teras kayu menuju Main Warehouse)
-  { id: 'store', name: 'Store Office', tier: 0, gx: -1, row: 1, kind: 'dept', dept: 'store', desc: 'Kantor tim outlet: store manager, trainer, planner, dan customer service.' },
-  { id: 'lobby', name: 'Genkan 玄関', tier: 0, gx: 0, row: 1, kind: 'lobby', desc: 'Pintu masuk kantor dan meja resepsionis.' },
-  { id: 'lounge', name: 'Bar Ramen', tier: 0, gx: 1, row: 1, kind: 'lounge', desc: 'Bar ramen, tempat kru istirahat sambil makan.' },
-  { id: 'gym', name: 'Dojo Latihan', tier: 0, gx: -1, row: 0, kind: 'gym', desc: 'Ruang latihan kru: teknik masak dan penyajian.' },
-  { id: 'pods', name: 'Ruang Istirahat', tier: 0, gx: 0, row: 0, kind: 'pods', desc: 'Kapsul tidur ala Jepang untuk mengisi tenaga.' },
-  { id: 'deck', name: 'Engawa', tier: 0, gx: 1, row: 0, kind: 'deck', desc: 'Teras kayu terbuka menuju jembatan Main Warehouse.' },
-  // Gedung samping di dermaga: Supply Chain
-  { id: 'ck', name: 'Central Kitchen', tier: 0, x: SIDE_X, z: (1 - 0.5) * CELL, kind: 'dept', dept: 'scm', desc: 'Dapur pusat: produksi kuah, tare, mie, dan topping.' },
-  { id: 'wh', name: 'Main Warehouse', tier: 0, x: SIDE_X, z: (0 - 0.5) * CELL, kind: 'dept', dept: 'scm', desc: 'Gudang utama: stok bahan, PO supplier, dan distribusi ke outlet.' },
-  // Lantai 2: workspace
-  { id: 'mkt', name: 'Marketing Studio', tier: 1, gx: -1, row: 1, kind: 'dept', dept: 'mkt', desc: 'Konten, desain, iklan, dan komunitas.' },
-  { id: 'fin', name: 'Finance Room', tier: 1, gx: 0, row: 1, kind: 'dept', dept: 'fin', desc: 'Pembukuan, food cost, dan analisis penjualan.' },
-  { id: 'hr', name: 'HR Room', tier: 1, gx: 1, row: 1, kind: 'dept', dept: 'hr', desc: 'Rekrutmen, payroll, absensi, dan budaya kerja.' },
-  { id: 'mission', name: 'Papan Misi', tier: 1, gx: -1, row: 0, kind: 'mission', desc: 'Papan misi dan peta seluruh holding.' },
-  { id: 'server', name: 'Ruang Server', tier: 1, gx: 0, row: 0, kind: 'server', desc: 'Rak server dan sistem kasir outlet.' },
-  // Lantai 3: tatami
-  { id: 'garden', name: 'Taman Zen', tier: 2, gx: -1, row: 1, kind: 'garden', desc: 'Taman batu di balkon atap, tempat mencari ide.' },
-  { id: 'hall', name: 'Ruang Rapat Tatami', tier: 2, gx: 0, row: 1, kind: 'hall', desc: 'Ruang rapat lintas divisi dengan meja rendah.' },
-  { id: 'royal', name: 'Ruang Chief', tier: 2, gx: 0, row: 0, kind: 'royal', dept: 'ceo', desc: 'Ruang kerja Ryu, asal semua misi.' },
+  // Lantai 1 (kaki tebing, tepat di atas awan)
+  { id: 'lobby', name: 'Genkan 玄関', tier: 0, gx: -1, kind: 'lobby', desc: 'Pintu masuk holding dan meja resepsionis; tamu naik dari tangga batu di balik awan.' },
+  { id: 'lounge', name: 'Bar Ramen', tier: 0, gx: 0, kind: 'lounge', desc: 'Bar ramen, tempat kru istirahat sambil makan.' },
+  { id: 'deck', name: 'Engawa', tier: 0, gx: 1, kind: 'deck', desc: 'Teras kayu terbuka menuju jembatan ke Central Kitchen & Main Warehouse.' },
+  // tebing seberang: Supply Chain
+  { id: 'ck', name: 'Central Kitchen', tier: 0, x: SIDE_X, z: 0, kind: 'dept', dept: 'scm', desc: 'Dapur pusat: produksi kuah, tare, mie, dan topping.' },
+  { id: 'wh', name: 'Main Warehouse', tier: 0, x: SIDE_X, z: -CELL, kind: 'dept', dept: 'scm', desc: 'Gudang utama: stok bahan, PO supplier, dan distribusi ke outlet.' },
+  // Lantai 2
+  { id: 'store', name: 'Store Office', tier: 1, gx: -1, kind: 'dept', dept: 'store', desc: 'Kantor tim outlet: store manager, trainer, planner, dan customer service.' },
+  { id: 'pods', name: 'Ruang Istirahat', tier: 1, gx: 0, kind: 'pods', desc: 'Kapsul tidur ala Jepang untuk mengisi tenaga.' },
+  { id: 'hr', name: 'HR Room', tier: 1, gx: 1, kind: 'dept', dept: 'hr', desc: 'Rekrutmen, payroll, absensi, dan budaya kerja.' },
+  // Lantai 3
+  { id: 'gym', name: 'Dojo Latihan', tier: 2, gx: -1, kind: 'gym', desc: 'Ruang latihan kru: teknik masak dan penyajian.' },
+  { id: 'server', name: 'Ruang Server', tier: 2, gx: 0, kind: 'server', desc: 'Rak server dan sistem kasir outlet.' },
+  { id: 'mission', name: 'Papan Misi', tier: 2, gx: 1, kind: 'mission', desc: 'Papan misi dan peta seluruh holding.' },
+  // Lantai 4
+  { id: 'mkt', name: 'Marketing Studio', tier: 3, gx: -1, kind: 'dept', dept: 'mkt', desc: 'Konten, desain, iklan, dan komunitas.' },
+  { id: 'hall', name: 'Ruang Rapat Tatami', tier: 3, gx: 0, kind: 'hall', desc: 'Ruang rapat lintas divisi dengan meja rendah.' },
+  { id: 'fin', name: 'Finance Room', tier: 3, gx: 1, kind: 'dept', dept: 'fin', desc: 'Pembukuan, food cost, dan analisis penjualan.' },
+  // Puncak tebing
+  { id: 'garden', name: 'Taman Zen', tier: 4, gx: -1, kind: 'garden', desc: 'Taman batu di puncak tebing, tempat mencari ide.' },
+  { id: 'royal', name: 'Ruang Chief', tier: 4, gx: 0, kind: 'royal', dept: 'ceo', desc: 'Paviliun Ryu di puncak, asal semua misi.' },
 ];
 
 export const ROOM_LIST = ROOMS.map((rm) => {
-  const [x, z] = rm.x !== undefined ? [rm.x, rm.z] : gridToWorld(rm.gx, rm.row);
-  return { ...rm, x, z, y: tierY(rm.tier) };
+  const [x, z] = rm.x !== undefined ? [rm.x, rm.z] : [rm.gx * CELL, 0];
+  return { ...rm, row: 1, x, z, y: tierY(rm.tier) };
 });
 export const ROOM_BY_ID = Object.fromEntries(ROOM_LIST.map((r) => [r.id, r]));
 
-/* ---------- jalur jalan kaki: pintu antar-ruangan, teras barat + tangga luar, jembatan ---------- */
+/* ---------- jalur jalan kaki: pintu depan ke selasar, pintu antar-ruangan, tangga zig-zag, jembatan ---------- */
 
-// teras (engawa) di sisi barat gedung tiap lantai dan dua tangga luar yang menghubungkannya
-export const WEST_X = -CELL * 1.5 - 0.2; // dinding barat gedung
-export const BALCONY = { x0: WEST_X - 4.4, x1: WEST_X, z0: -CELL, z1: CELL };
-const BAL_IN = BALCONY.x1 - 1.4; // garis jalan di teras
-const BAL_OUT = BALCONY.x0 + 0.8;
-export const STAIRS = [
-  // lantai 1 -> 2: naik ke arah belakang (-z)
-  { from: 0, x: BALCONY.x0 - 1.0, z0: 6.4, z1: -1.6 },
-  // lantai 2 -> 3: naik ke arah depan (+z), lajur lebih luar
-  { from: 1, x: BALCONY.x0 - 2.8, z0: -1.6, z1: 6.4 },
-];
+// tangga antar selasar: naik ke belakang (rapat ke tebing) lalu kembali ke depan, sisi bergantian
+export const STAIRS = Array.from({ length: TOP_TIER }, (_, t) => {
+  const side = t % 2 ? 1 : -1; // lantai genap naik di barat (timur lantai 1 dipakai jembatan)
+  const x = side * (GAL.x1 + 1.1);
+  return { from: t, side, x, xOut: x + side * 1.6, zFront: GAL_Z, zBack: CLIFF_Z + 2.2 };
+});
 // sisi dinding: 0 = timur (+x), 1 = depan (+z), 2 = barat (-x), 3 = belakang (-z)
 const SIDE_DIR = [
   [1, 0],
@@ -144,7 +150,7 @@ const SIDE_DIR = [
   [-1, 0],
   [0, -1],
 ];
-const gridRoom = (tier, gx, row) => ROOM_LIST.find((r) => r.tier === tier && r.gx === gx && r.row === row);
+const gridRoom = (tier, gx) => ROOM_LIST.find((r) => r.tier === tier && r.gx === gx);
 const wallPoint = (room, side, y = room.y) => [room.x + SIDE_DIR[side][0] * HALF, y, room.z + SIDE_DIR[side][1] * HALF];
 
 const EDGES = []; // { a, b, pts: [[x,y,z]...] dari a ke b }
@@ -155,62 +161,66 @@ function addEdge(a, b, pts, doorA, doorB) {
   if (doorA !== undefined) addDoor(a, doorA);
   if (doorB !== undefined) addDoor(b, doorB);
 }
-// pintu antar-ruangan bersebelahan di lantai yang sama (timur & depan saja supaya tidak dobel)
+const gal = (t) => `gal${t}`;
 for (const r of ROOM_LIST.filter((x) => x.gx !== undefined)) {
-  const east = gridRoom(r.tier, r.gx + 1, r.row);
+  // pintu depan ke selasar lantainya
+  addEdge(r.id, gal(r.tier), [wallPoint(r, 1), [r.x, r.y, GAL_Z]], 1);
+  // pintu ke ruangan sebelah timur
+  const east = gridRoom(r.tier, r.gx + 1);
   if (east) addEdge(r.id, east.id, [[r.x + CELL / 2, r.y, r.z]], 0, 2);
-  const front = gridRoom(r.tier, r.gx, r.row + 1);
-  if (front) addEdge(r.id, front.id, [[r.x, r.y, r.z + CELL / 2]], 1, 3);
 }
-// ruangan kolom barat -> teras barat lantainya
-for (const r of ROOM_LIST.filter((x) => x.gx === -1)) {
-  addEdge(r.id, `bal${r.tier}`, [wallPoint(r, 2), [BAL_IN, r.y, r.z]], 2);
-}
-// tangga luar antar teras
+// tangga zig-zag antar selasar
 for (const st of STAIRS) {
   const y0 = tierY(st.from);
   const y1 = tierY(st.from + 1);
-  addEdge(`bal${st.from}`, `bal${st.from + 1}`, [
-    [BAL_OUT, y0, st.z0],
-    [st.x, y0, st.z0],
-    [st.x, y1, st.z1],
-    [BAL_OUT, y1, st.z1],
+  const mid = (y0 + y1) / 2;
+  const edge = st.side * GAL.x1;
+  addEdge(gal(st.from), gal(st.from + 1), [
+    [edge - st.side * 0.6, y0, GAL_Z],
+    [st.x, y0, st.zFront],
+    [st.x, mid, st.zBack],
+    [st.xOut, mid, st.zBack],
+    [st.xOut, y1, st.zFront],
+    [edge - st.side * 0.6, y1, GAL_Z],
   ]);
 }
-// jembatan kayu ke gedung samping
-addEdge('lounge', 'ck', [wallPoint(ROOM_BY_ID.lounge, 0), wallPoint(ROOM_BY_ID.ck, 2)], 0, 2);
-addEdge('deck', 'wh', [wallPoint(ROOM_BY_ID.deck, 0), wallPoint(ROOM_BY_ID.wh, 2)], 0, 2);
+// jembatan tali Engawa -> Central Kitchen, lalu pintu belakang CK -> gudang
+addEdge('deck', 'ck', [wallPoint(ROOM_BY_ID.deck, 0), wallPoint(ROOM_BY_ID.ck, 2)], 0, 2);
+addEdge('ck', 'wh', [wallPoint(ROOM_BY_ID.ck, 3)], 3, 1);
 export const doorSides = (roomId) => DOORS[roomId] || new Set();
-export const BRIDGES = [
-  { z: ROOM_BY_ID.ck.z, x0: ROOM_BY_ID.lounge.x + HALF, x1: SIDE_X - HALF },
-  { z: ROOM_BY_ID.wh.z, x0: ROOM_BY_ID.deck.x + HALF, x1: SIDE_X - HALF },
-];
+export const BRIDGES = [{ z: 0, y: 0, x0: ROOM_BY_ID.deck.x + HALF, x1: SIDE_X - HALF }];
 
 const ADJ = {};
 for (const e of EDGES) {
   (ADJ[e.a] ||= []).push({ to: e.b, pts: e.pts });
   (ADJ[e.b] ||= []).push({ to: e.a, pts: [...e.pts].reverse() });
 }
-// titik lewat saat melintasi ruangan di tengah perjalanan (menghindari meja di tengah ruangan)
+// titik lewat saat melintasi node di tengah perjalanan
 const VIA = (id) => {
   const r = ROOM_BY_ID[id];
-  return r ? [r.x, r.y, r.z + 2.9] : null; // teras terbuka: jalan lurus saja
+  if (r) return [r.x, r.y, r.z + 2.9]; // dekat pintu depan, menghindari meja di tengah
+  return null; // selasar: jalan lurus saja
+};
+const nodePos = (id) => {
+  const r = ROOM_BY_ID[id];
+  if (r) return [r.x, r.y, r.z];
+  return [0, tierY(Number(id.slice(3))), GAL_Z];
 };
 
-// node tempat sebuah titik berada: ruangan, teras barat, atau null
+// node tempat sebuah titik berada: ruangan, selasar (termasuk tangga), atau null
 export function nodeAt(x, y, z) {
   const tier = tierOf(y);
   for (const r of ROOM_LIST) {
     if (r.tier === tier && Math.abs(x - r.x) <= HALF + 0.3 && Math.abs(z - r.z) <= HALF + 0.3) return r.id;
   }
-  if (x < BALCONY.x1 + 0.3 && x > BALCONY.x0 - 4 && z > BALCONY.z0 - 1 && z < BALCONY.z1 + 1) return `bal${tier}`;
+  if (Math.abs(x) <= GAL.x1 + 3.5 && z > CLIFF_Z && z <= GAL.z1 + 0.6) return gal(tier);
   return null;
 }
 function nearestNode(x, y, z) {
   let best = null;
   let bd = Infinity;
   for (const id of Object.keys(ADJ)) {
-    const [px, py, pz] = VIA(id) || [BAL_IN, tierY(Number(id.slice(3))), 0];
+    const [px, py, pz] = nodePos(id);
     const d = (px - x) ** 2 + (py - y) ** 2 * 4 + (pz - z) ** 2;
     if (d < bd) {
       bd = d;
@@ -250,17 +260,18 @@ export function walkRoute(a, b) {
   return out;
 }
 
-// Tamu yang datang ke Genkan lewat tangga depan
+// Tamu naik dari tangga batu di balik awan (sisi barat depan), lewat selasar ke pintu Genkan
 const LOBBY = ROOM_BY_ID.lobby;
 export const LOBBY_DOOR = [LOBBY.x, 0, LOBBY.z + HALF];
-export const STAIR_Z = LOBBY.z + HALF + 0.2; // tangga turun dari pintu ke dermaga
+export const GUEST_STAIR = { x: GAL.x0 - 5, zTop: GAL.z1 + 0.4, zBottom: GAL.z1 + 12.4, yBottom: -9 };
 const guestPath = (dx) => [
-  [dx, -2.2, STAIR_Z + 13],
-  [dx, -2.2, STAIR_Z + 4.2],
-  [dx, 0, STAIR_Z + 0.1],
-  [dx, 0, LOBBY.z + HALF - 1.0],
-  [dx * 3.5, 0, LOBBY.z + 2.2],
-  [dx * 2.5, 0, LOBBY.z + 1.6],
+  [GUEST_STAIR.x + dx, GUEST_STAIR.yBottom - 4, GUEST_STAIR.zBottom + 4],
+  [GUEST_STAIR.x + dx, GUEST_STAIR.yBottom, GUEST_STAIR.zBottom],
+  [GUEST_STAIR.x + dx, 0, GUEST_STAIR.zTop + 0.4],
+  [LOBBY.x + dx, 0, GAL_Z],
+  [LOBBY.x + dx, 0, LOBBY.z + HALF - 1.0],
+  [LOBBY.x + dx * 3.5, 0, LOBBY.z + 2.2],
+  [LOBBY.x + dx * 2.5, 0, LOBBY.z + 1.6],
 ];
 export const GUESTS = [
   { id: 'guest-a', nick: 'Tamu', role: 'Pelanggan', dept: 'guest', guest: true, skin: 1, path: guestPath(0.4) },

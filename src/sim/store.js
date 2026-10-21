@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { TIER_GAP, ROOM_BY_ID } from '../data/hive';
 import { loadProfile } from '../data/staff';
 
-const DEFAULT_FOCUS = { target: [3, 6, 2], dist: 66 };
+const DEFAULT_FOCUS = { target: [4, 12, 0], dist: 88, dir: [0.4, 0.2, 0.9] };
 
 // Isi awal Ruang Tatami (mode demo): tugas rencana pembukaan outlet baru + promo "Ramen Day" dan antrean persetujuan.
 const PLAN_TASKS = [
@@ -47,7 +47,7 @@ export const useHive = create((set) => ({
       focus:
         floor === 'all'
           ? { ...DEFAULT_FOCUS, key: s.focus.key + 1 }
-          : { target: [3, floor * TIER_GAP + 1.2, 0], dist: 44, key: s.focus.key + 1 },
+          : { target: [0, floor * TIER_GAP + 1.2, 1], dist: 40, dir: [0.25, 0.3, 0.92], key: s.focus.key + 1 },
     })),
   selectRoom: (id) =>
     set((s) => {

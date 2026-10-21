@@ -39,7 +39,7 @@ function Tower({ tv = false, intro = false, required = false }) {
         shadows={!saver}
         dpr={saver ? Math.min(1, dpr) : dpr}
         gl={{ powerPreference: 'high-performance', antialias: false, stencil: false }}
-        camera={{ position: [40, 34, 48], fov: 35, near: 0.1, far: 500 }}
+        camera={{ position: [32, 29, 66], fov: 35, near: 0.1, far: 600 }}
         onPointerMissed={() => useHive.getState().clearSelection()}
       >
         <PerformanceMonitor
@@ -89,7 +89,7 @@ function Splash() {
     <div className="page auth-page">
       <div className="splash">
         <img className="splash-logo" src={`${import.meta.env.BASE_URL}logo.png`} alt="" width="56" height="56" aria-hidden="true" />
-        Memuat Kyuka Ramen Virtual…
+        Memuat KYUMEN Holding…
       </div>
     </div>
   );
