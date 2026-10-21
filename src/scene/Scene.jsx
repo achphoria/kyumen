@@ -12,6 +12,8 @@ import { IntroDirector } from './IntroDirector';
 import { SkyDome, CloudSea } from './Atmosphere';
 import { WarmEnvironment, LookFX, useQuality } from './Look';
 import { useSaver } from '../sim/saver';
+import { useHive } from '../sim/store';
+import { StaticMerge } from './StaticMerge';
 
 // pengembangan saja: akses renderer untuk profil performa (tidak ikut build publik)
 function DevExpose() {
@@ -46,6 +48,7 @@ function ShadowThrottle({ hz = 3 }) {
 export function Scene({ tv = false, intro = false }) {
   const quality = useQuality();
   const saver = useSaver((s) => s.on);
+  const floor = useHive((s) => s.floor);
   return (
     <>
       {import.meta.env.DEV && <DevExpose />}
@@ -58,16 +61,20 @@ export function Scene({ tv = false, intro = false }) {
       {!saver && <LookFX quality={quality} ao={false} />}
       <DayNight />
       <CloudFloor />
-      <Cliff />
-      <Plateau />
+      {/* seluruh bangunan statis digabung jadi satu mesh per material (ratusan draw call -> puluhan);
+          digabung ulang saat pilihan lantai berganti karena selasar/tangga/emper ikut disaring */}
+      <StaticMerge key={`holding-${floor}`}>
+        <Cliff />
+        <Plateau />
+        <Galleries />
+        <Stairs />
+        <GuestStair />
+        <RopeBridge />
+        <SideSupports />
+        <Roofs />
+      </StaticMerge>
       <Waterfall />
       <GuardianDragon />
-      <Galleries />
-      <Stairs />
-      <GuestStair />
-      <RopeBridge />
-      <SideSupports />
-      <Roofs />
       {ROOM_LIST.map((r) => (
         <Room key={r.id} room={r} />
       ))}
