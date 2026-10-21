@@ -46,7 +46,7 @@ Staff manusia memakai avatar yang bisa dikustom (bukan naga), supaya mudah dibed
 - Satu baris tiga ruangan per lantai, menghadap depan; tebing di belakang. Selasar kayu berpagar merah di depan tiap lantai, tiang menurun ke batu.
 - Agent pindah lantai lewat **tangga zig-zag** di sisi tebing (bergantian barat/timur). Tamu naik **tangga batu** dari balik awan melewati torii.
 - **Naga penjaga** melingkar di tebing timur; kepalanya bisa diklik untuk menyorot Ryu. Air terjun di sisi barat, pilar batu & pinus di kejauhan.
-- Atap tiap lantai hilang saat lantai itu dipilih, supaya isi ruangan terlihat.
+- Di antara lantai tidak ada atap penuh, hanya **emper miring** di depan tiap ruangan (emper tengah lebih tinggi berujung emas), supaya ruang antar lantai tetap lega. Emper lantai yang dipilih hilang supaya isi ruangan terlihat.
 
 ## Efek
 
