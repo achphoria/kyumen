@@ -412,20 +412,61 @@ export function RopeBridge() {
 }
 
 /* ---------- atap: satu atap panjang per lantai + atap kecil menonjol di ruang tengah ---------- */
+// emper (hisashi) miring di depan tiap lantai: hanya menaungi selasar, jadi ruang antar lantai tetap lega
+// (atap penuh di antara lantai membuat bangunan terlihat gepeng)
+function Eave({ y, x0, x1, lift = 0, gold = false }) {
+  const len = x1 - x0;
+  const cx = (x0 + x1) / 2;
+  const zb = HALF - 0.2;
+  const zf = GAL.z1 + 0.9;
+  const yb = y + 4.4 + lift;
+  const yf = y + 2.75 + lift;
+  const run = zf - zb;
+  const ang = Math.atan2(yb - yf, run);
+  const slope = Math.hypot(run, yb - yf);
+  const zm = (zb + zf) / 2;
+  const ym = (yb + yf) / 2;
+  const ribs = Math.max(4, Math.round(len / 1.15));
+  return (
+    <group>
+      <StaticMerge>
+        <Bm p={[cx, ym, zm]} s={[len, 0.2, slope]} r={[ang, 0, 0]} m={ROOF} />
+        {/* alur genteng */}
+        {Array.from({ length: ribs }, (_, i) => (
+          <Bm key={i} p={[x0 + 0.3 + (i * (len - 0.6)) / (ribs - 1), ym + 0.13, zm]} s={[0.14, 0.1, slope]} r={[ang, 0, 0]} m={ROOF_EDGE} shadow={false} />
+        ))}
+        {/* lis depan, balok belakang */}
+        <Bm p={[cx, yf - 0.02, zf]} s={[len + 0.2, 0.3, 0.3]} m={ROOF_EDGE} />
+        <Bm p={[cx, yf - 0.28, zf - 0.08]} s={[len, 0.22, 0.12]} m={BEAM} />
+        <Bm p={[cx, yb + 0.05, zb]} s={[len, 0.26, 0.3]} m={BEAM} />
+      </StaticMerge>
+      {[-1, 1].map((sx) => (
+        <Cone key={sx} p={[cx + (sx * (len + 0.2)) / 2, yf + 0.25, zf + 0.1]} r={[0.5, 0, -sx * 0.8]} a={[0.16, 0.75, 5]} m={gold ? GOLD : ROOF_EDGE} />
+      ))}
+    </group>
+  );
+}
+
+// tiga emper per lantai (satu per ruangan); emper tengah sedikit lebih tinggi berujung emas
+function TierEaves({ t }) {
+  const y = tierY(t);
+  const g = 0.12;
+  return (
+    <group>
+      <Eave y={y} x0={GAL.x0} x1={-CELL / 2 - g} />
+      <Eave y={y} x0={-CELL / 2 + g} x1={CELL / 2 - g} lift={0.4} gold />
+      <Eave y={y} x0={CELL / 2 + g} x1={GAL.x1} />
+    </group>
+  );
+}
+
 export function Roofs() {
   const floor = useHive((s) => s.floor);
   const tiers = [0, 1, 2, 3];
   const sideRooms = ROOM_LIST.filter((r) => r.gx === undefined);
   return (
     <group>
-      {tiers.map((t) =>
-        roofShown(floor, t) ? (
-          <group key={t}>
-            <JRoof p={[0, tierY(t) + WALL_H + 0.3, -0.2]} w={CELL * 3 + 1.6} d={HALF * 2 + 2.2} s={0.95} />
-            <JRoof p={[0, tierY(t) + WALL_H + 1.2, 1.6]} w={CELL - 1.2} d={HALF + 1.4} s={0.75} ridgeGold={false} />
-          </group>
-        ) : null,
-      )}
+      {tiers.map((t) => (roofShown(floor, t) ? <TierEaves key={t} t={t} /> : null))}
       {roofShown(floor, TOP_TIER) && <RoyalPavilion />}
       {roofShown(floor, 0) && <JRoof p={[SIDE_X, WALL_H + 0.3, (sideRooms[0].z + sideRooms[1].z) / 2]} w={HALF * 2 + 2} d={CELL + HALF * 2 + 2} s={1} />}
     </group>
