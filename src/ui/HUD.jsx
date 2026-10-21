@@ -8,13 +8,37 @@ import { go } from './nav';
 import { useAuth } from '../sim/auth';
 import { updatePresence } from '../sim/presence';
 import { sound } from '../audio/sound';
-import { useAi, checkAi } from '../hall/queenBea';
+import { useAi, checkAi, modelLabel } from '../hall/queenBea';
 import { useMeeting } from '../hall/meeting';
 import { PlazaBar } from './PlazaBar';
 import { useAgentNet, useAgentScores, checkHealth } from '../hall/agentApi';
 import { useSaver } from '../sim/saver';
+import { BOARD_EMPTY_REAL, missionBoardItems, nextBoardTick } from './missionBoard';
 
-const PHASE = { dispatch: 'Dikirim', gather: 'Berkumpul', work: 'Dikerjakan' };
+const PHASE = { dispatch: 'Dikirim', gather: 'Berkumpul', work: 'Dikerjakan', done: '✅ Selesai' };
+
+// Mode real: tugas jalan + yang selesai dalam ±10 menit. Timer menghitung ulang supaya kartu
+// selesai hilang sendiri, tanpa menunggu data baru dari database.
+function useMissionBoardItems() {
+  const missions = useHive((s) => s.missions);
+  const tasks = useHive((s) => s.planTasks);
+  const real = useAuth((s) => !!s.account);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!real) return undefined;
+    const id = setInterval(() => setNow(Date.now()), 10000);
+    return () => clearInterval(id);
+  }, [real]);
+  useEffect(() => {
+    if (!real) return undefined;
+    const at = nextBoardTick(tasks, Date.now());
+    if (at == null) return undefined;
+    const id = setTimeout(() => setNow(Date.now()), Math.max(250, at - Date.now() + 30));
+    return () => clearTimeout(id);
+  }, [real, tasks, now]);
+  if (!real) return missions;
+  return missionBoardItems(tasks, missions, now);
+}
 
 function Logo() {
   return <img className="brand-logo" src={`${import.meta.env.BASE_URL}logo.png`} alt="" width="40" height="40" aria-hidden="true" />;
@@ -138,11 +162,6 @@ function AccountChip() {
           {ROLE_LABEL[account.role]} · {online} rekan online
         </span>
       </div>
-      {['owner', 'lead'].includes(account.role) && (
-        <button className="acct-btn" onClick={() => go('/undang')}>
-          Undang
-        </button>
-      )}
       <button className="acct-btn ghost" onClick={signOut}>
         Keluar
       </button>
@@ -224,7 +243,7 @@ export function ServerStatusDetail() {
         'Server agent (n8n · PC kantor)',
         net.online === null ? 'Memeriksa…' : `${net.online ? `Online, ${AGENTS.length - 1} agent siap kerja` : 'Offline, tugas agent tertunda'}${net.checkedAt ? ` · dicek ${hm(net.checkedAt)} WIB` : ''}`,
       )}
-      {row(ai === 'unknown' ? null : ai === 'on', 'Ryu (Claude Haiku 5.5)', ai === 'on' ? 'Tersambung' : ai === 'unknown' ? 'Memeriksa…' : 'Belum tersambung')}
+      {row(ai === 'unknown' ? null : ai === 'on', `Ryu (${modelLabel(useAi.getState().model)})`, ai === 'on' ? 'Tersambung' : ai === 'unknown' ? 'Memeriksa…' : 'Belum tersambung')}
       <p className="muted small srv-note">
         Sisa saldo token Claude tidak bisa dibaca dari API.
         {owner ? (
@@ -469,11 +488,6 @@ function AccountPanel({ onPick }) {
         <button className="acct-btn ghost" onClick={() => nav('/hall')}>
           Ruang Tatami
         </button>
-        {account && ['owner', 'lead'].includes(account.role) && (
-          <button className="acct-btn ghost" onClick={() => nav('/undang')}>
-            Undang staff
-          </button>
-        )}
         {session && (
           <button
             className="acct-btn ghost danger"
@@ -579,7 +593,7 @@ function Directory({ defaultOpen = false, onPick }) {
 }
 
 function MissionBoard({ className = 'panel board', onPick }) {
-  const missions = useHive((s) => s.missions);
+  const items = useMissionBoardItems();
   const simLog = useHive((s) => s.log);
   const dbActivity = useHive((s) => s.dbActivity);
   const real = useAuth((s) => !!s.account);
@@ -590,7 +604,7 @@ function MissionBoard({ className = 'panel board', onPick }) {
     <aside className={className}>
       <div className="tabs">
         <button className={tab === 'active' ? 'on' : ''} onClick={() => setTab('active')}>
-          Papan misi <em>{missions.length}</em>
+          Papan misi <em>{items.length}</em>
         </button>
         <button className={tab === 'log' ? 'on' : ''} onClick={() => setTab('log')}>
           Log holding
@@ -598,13 +612,13 @@ function MissionBoard({ className = 'panel board', onPick }) {
       </div>
       {tab === 'active' ? (
         <div className="list">
-          {missions.length === 0 && (
-            <p className="empty">{real ? 'Belum ada tugas yang sedang dikerjakan. Minta Ryu mendelegasikan tugas ke agent, nanti agentnya bekerja di sini.' : 'Ryu sedang menyiapkan misi berikutnya…'}</p>
+          {items.length === 0 && (
+            <p className="empty">{real ? BOARD_EMPTY_REAL : 'Ryu sedang menyiapkan misi berikutnya…'}</p>
           )}
-          {missions.map((m) => (
+          {items.map((m) => (
             <button
               key={m.id}
-              className="mission"
+              className={`mission${m.finished || m.phase === 'done' ? ' done' : ''}`}
               onClick={() => {
                 useHive.getState().selectRoom(m.roomId);
                 onPick?.();
@@ -641,30 +655,51 @@ function MissionBoard({ className = 'panel board', onPick }) {
   );
 }
 
-// dua pintu utama, dibuat mencolok
+// ikon garis untuk pintu utama (seragam, bukan emoji); Ruang Tatami = torii
+const PA_ICONS = {
+  hall: 'M3 6.5c6 1.4 12 1.4 18 0M5 10.5h14M7 7.4V20M17 7.4V20M12 7.8v2.7',
+  work: 'M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5',
+  portal: 'M4 4h5v16H4zM10 4h5v10h-5zM16 4h4v6h-4z',
+  workshop: 'M14.5 4.5a4 4 0 0 0-5 5L4 15l3 3 5.5-5.5a4 4 0 0 0 5-5l-2.4 2.4-2.6-.4-.4-2.6z',
+  employee: 'M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3.2 3.2 0 0 1 0 6.2M18 14.5c1.9.8 3 2.8 3 5.5',
+};
+function PaIcon({ name }) {
+  return (
+    <span className="pa-ic" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d={PA_ICONS[name]} />
+      </svg>
+    </span>
+  );
+}
+
+// pintu utama dalam satu dock; Ruang Tatami paling menonjol. Employee khusus owner & kepala divisi.
 function PrimaryActions({ className = 'primary-actions', onPick }) {
+  const account = useAuth((s) => s.account);
   const nav = (path) => {
     onPick?.();
     go(path);
   };
+  const items = [
+    ['hall', '/hall', 'Ruang Tatami', 'Rapat & Ryu', 'Tatami'],
+    ['work', '/agent', 'Ruang Kerja', 'Chat & tugas agent', 'Kerja'],
+    ['workshop', '/workshop', 'Workshop', 'Tiket tim', 'Workshop'],
+    ['portal', '/saya', 'Portal saya', 'Kanban & tugas', 'Portal'],
+    ...(account && ['owner', 'lead'].includes(account.role) ? [['employee', '/employee', 'Employee', 'Data & undangan', 'Employee']] : []),
+  ];
+  const dock = className.includes('is-dock'); // HP: label pendek supaya tidak terpotong
   return (
-    <div className={className}>
-      <button className="pa-btn hall" onClick={() => nav('/hall')}>
-        <span aria-hidden="true">🏯</span>
-        <b>Ruang Tatami</b>
-        <small>Rapat & Ryu</small>
-      </button>
-      <button className="pa-btn work" onClick={() => nav('/agent')}>
-        <span aria-hidden="true">💬</span>
-        <b>Ruang Kerja</b>
-        <small>Chat & tugas agent</small>
-      </button>
-      <button className="pa-btn portal" onClick={() => nav('/saya')}>
-        <span aria-hidden="true">🙋</span>
-        <b>Portal saya</b>
-        <small>Kanban, tugas & rapat</small>
-      </button>
-    </div>
+    <nav className={className} aria-label="Pintu utama">
+      {items.map(([id, path, title, sub, short]) => (
+        <button key={id} className={`pa-btn pa-${id}`} onClick={() => nav(path)} aria-label={title}>
+          <PaIcon name={id} />
+          <span className="pa-txt">
+            <b>{dock ? short : title}</b>
+            <small>{sub}</small>
+          </span>
+        </button>
+      ))}
+    </nav>
   );
 }
 
@@ -893,7 +928,7 @@ function ListIcon() {
 // Tampilan HP: hanya header; panel lain masuk laci samping yang muncul saat tab ditekan.
 function MobileHUD() {
   const [drawer, setDrawer] = useState(null);
-  const missions = useHive((s) => s.missions);
+  const missions = useMissionBoardItems();
   const close = () => setDrawer(null);
   const plaza = useAuth((s) => !!s.account);
   return (

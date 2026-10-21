@@ -77,6 +77,7 @@ async function invoke(body, fallback) {
       /* bukan JSON */
     }
     if (res.error === 'daily_limit') throw new Error(`Batas pesan harian kamu sudah habis (${res.used}/${res.limit}). Coba lagi besok, atau minta owner menaikkan batas.`);
+    if (res.message) throw new Error(res.message);
     throw new Error(ERR[res.error] || fallback);
   }
   return data;
@@ -92,8 +93,8 @@ export function sendToAgent({ agent, message, threadId, files, engine }) {
 }
 
 // Jadikan tugas untuk agent: kartu papan rencana yang langsung dikerjakan agent lewat n8n
-export function createAgentTask({ agent, title, detail }) {
-  return invoke({ action: 'task', agent, title, detail }, 'Tugas gagal dibuat. Coba lagi.');
+export function createAgentTask({ agent, title, detail, threadId }) {
+  return invoke({ action: 'task', agent, title, detail, thread_id: threadId || undefined }, 'Tugas gagal dibuat. Coba lagi.');
 }
 
 // Jadikan tugas untuk diri sendiri (tugas manusia di papan rencana)
@@ -128,6 +129,11 @@ export async function uploadFiles(list) {
     out.push({ path, name: f.name, type: MIME[ext], size: f.size });
   }
   return out;
+}
+// tautan sementara (10 menit) ke lampiran di bucket privat
+export async function fileUrl(path, seconds = 600) {
+  const { data } = await supabase.storage.from('hc-agent-files').createSignedUrl(path, seconds);
+  return data?.signedUrl || null;
 }
 export async function openFile(path) {
   const { data } = await supabase.storage.from('hc-agent-files').createSignedUrl(path, 300);

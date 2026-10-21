@@ -9,10 +9,13 @@ import { AgentWorkspace } from './ui/AgentWorkspace';
 import { AccessPage } from './ui/AccessPage';
 import { StatsPage } from './ui/StatsPage';
 import { PortalPage } from './ui/PortalPage';
+import { WorkshopView } from './ui/WorkshopView';
+import { VideoMeetingPage } from './ui/VideoMeetingPage';
 import { useSaver } from './sim/saver';
 import { startAgentWatch, stopAgentWatch } from './hall/agentApi';
 import { AvatarCreator } from './ui/AvatarCreator';
-import { LoginPage, JoinPage, InvitePage } from './ui/AuthPages';
+import { LoginPage, JoinPage, SetPasswordPage } from './ui/AuthPages';
+import { EmployeePage } from './ui/EmployeePage';
 import { useRoute } from './ui/nav';
 import { useHive } from './sim/store';
 import { useAuth, toAvatarProfile } from './sim/auth';
@@ -122,6 +125,8 @@ export function App() {
   if (!session) return <LoginPage />;
   if (!account) return needsInvite ? <JoinPage /> : <Splash />;
   // SOP staff baru: video perkenalan wajib ditonton sekali sebelum masuk ke mana pun
+  // diundang lewat email: buat password dulu sebelum masuk ke mana pun
+  if (session.user?.user_metadata?.needs_password) return <SetPasswordPage />;
   if (!account.intro_seen_at) return <Tower intro required />;
   if (route === '/tv') return <Tower tv />;
   if (route === '/intro') return <Tower intro />;
@@ -129,9 +134,12 @@ export function App() {
   if (route === '/akses') return <AccessPage />;
   if (route === '/statistik') return <StatsPage />;
   if (route === '/saya') return <PortalPage />;
+  if (route === '/video') return <VideoMeetingPage />;
+  if (route.startsWith('/rapat/')) return <VideoMeetingPage meetingId={route.split('/')[2]} />;
+  if (route === '/workshop' || route.startsWith('/workshop/')) return <WorkshopView ticketNo={route.split('/')[2] || null} />;
   if (route === '/hall') return <HallView />;
   if (route === '/avatar') return <AvatarCreator />;
   if (route === '/login') return <LoginPage />;
-  if (route === '/undang') return <InvitePage />;
+  if (route === '/employee' || route === '/undang') return <EmployeePage />;
   return <Tower />;
 }
