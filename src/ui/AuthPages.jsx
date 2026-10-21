@@ -219,7 +219,7 @@ export function SetPasswordPage() {
     }
   };
   return (
-    <Shell noBack title={`Selamat datang, ${account?.name || 'rekan'}!`} sub="Buat password untuk masuk ke Kyuka Ramen Virtual berikutnya. Email login kamu adalah email yang menerima undangan.">
+    <Shell noBack title={`Selamat datang, ${account?.name || 'rekan'}!`} sub="Buat password untuk masuk ke KYUMEN Holding berikutnya. Email login kamu adalah email yang menerima undangan.">
       <form className="auth-form" onSubmit={submit}>
         <label>
           Password baru

@@ -3,7 +3,8 @@ import { useEffect, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { ROOM_LIST } from '../data/hive';
 import { Room } from './Room';
-import { Agents, Island, Harbor, Roofs, WestTerrace, Bridges, Effects, CameraRig } from './World';
+import { Agents, Effects, CameraRig } from './World';
+import { Cliff, Galleries, Stairs, GuestStair, RopeBridge, Roofs, SideSupports, Plateau, Waterfall, GuardianDragon, CloudFloor } from './Holding';
 import { OutdoorStaff } from './StaffAvatar';
 import { DayNight } from './DayNight';
 import { TvDirector } from './TvDirector';
@@ -49,21 +50,27 @@ export function Scene({ tv = false, intro = false }) {
     <>
       {import.meta.env.DEV && <DevExpose />}
       {!saver && <ShadowThrottle />}
-      <fog attach="fog" args={['#E3F0FA', 95, 230]} />
+      <fog attach="fog" args={['#E3F0FA', 130, 320]} />
       <SkyDome />
       <CloudSea />
       <WarmEnvironment intensity={0.42} />
-      {/* tanpa AO (paling berat) supaya kedai tetap mulus */}
+      {/* tanpa AO (paling berat) supaya holding tetap mulus */}
       {!saver && <LookFX quality={quality} ao={false} />}
       <DayNight />
-      <Island />
-      <Harbor />
+      <CloudFloor />
+      <Cliff />
+      <Plateau />
+      <Waterfall />
+      <GuardianDragon />
+      <Galleries />
+      <Stairs />
+      <GuestStair />
+      <RopeBridge />
+      <SideSupports />
       <Roofs />
       {ROOM_LIST.map((r) => (
         <Room key={r.id} room={r} />
       ))}
-      <WestTerrace />
-      <Bridges />
       <Agents />
       <OutdoorStaff />
       <Effects />
@@ -72,9 +79,9 @@ export function Scene({ tv = false, intro = false }) {
         enableDamping
         dampingFactor={0.08}
         minDistance={7}
-        maxDistance={120}
-        maxPolarAngle={1.4}
-        target={[3, 6, 2]}
+        maxDistance={150}
+        maxPolarAngle={1.62}
+        target={[2, 13, 0]}
       />
       {intro ? <IntroDirector /> : tv ? <TvDirector /> : <CameraRig />}
     </>

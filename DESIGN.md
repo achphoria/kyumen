@@ -1,8 +1,8 @@
-# Kyuka Ramen Virtual: keputusan desain
+# KYUMEN Holding: keputusan desain
 
 ## Gaya
 
-- Diorama 3D low-poly: kedai Jepang 3 lantai di dermaga, dikelilingi laut (mengikuti gambar referensi brand).
+- Diorama 3D low-poly: **KYUMEN Holding**, bangunan Jepang 4 lantai + paviliun puncak yang menempel di muka tebing, di atas lautan awan (pengganti kedai dermaga sejak Tahap 6).
 - Dinding cutaway ala The Sims: dinding shoji yang menghadap kamera turun otomatis.
 - Atap genteng gelap, lentera kertas merah, tatami, taman batu zen, torii, pinus dan sakura.
 - Palet warna:
@@ -36,12 +36,17 @@ Staff manusia memakai avatar yang bisa dikustom (bukan naga), supaya mudah dibed
 
 | Lantai | Ruangan |
 |---|---|
-| Lantai 3 | Ruang Rapat Tatami, Ruang Chief (Ryu), Taman Zen (balkon) |
-| Lantai 2 (Workspace 職場) | Marketing Studio, Finance Room, HR Room, Papan Misi |
-| Lantai 1 | Genkan (pintu masuk), Store Office, Kedai Kyuka (bar ramen), Dojo Latihan, Ruang Istirahat, Ruang Server |
-| Gedung samping (dermaga) | Central Kitchen, Main Warehouse |
+| Puncak tebing | Ruang Chief (paviliun dua atap dengan papan KYUMEN Holding), Taman Zen, deretan torii, kuil kecil |
+| Lantai 4 | Marketing Studio, Ruang Rapat Tatami, Finance Room |
+| Lantai 3 | Dojo Latihan, Ruang Server, Papan Misi |
+| Lantai 2 | Store Office, Ruang Istirahat, HR Room |
+| Lantai 1 | Genkan (pintu masuk), Bar Ramen, Engawa (teras) |
+| Tebing seberang | Central Kitchen, Main Warehouse (lewat jembatan tali dari Engawa) |
 
-Agent pindah lantai dengan terbang lewat **menara naga** di sisi kiri kedai. Gerobak pengantar bolak-balik dari Main Warehouse ke kedai. Patung naga raksasa di batu pelabuhan bisa diklik untuk menyorot Ryu.
+- Satu baris tiga ruangan per lantai, menghadap depan; tebing di belakang. Selasar kayu berpagar merah di depan tiap lantai, tiang menurun ke batu.
+- Agent pindah lantai lewat **tangga zig-zag** di sisi tebing (bergantian barat/timur). Tamu naik **tangga batu** dari balik awan melewati torii.
+- **Naga penjaga** melingkar di tebing timur; kepalanya bisa diklik untuk menyorot Ryu. Air terjun di sisi barat, pilar batu & pinus di kejauhan.
+- Atap tiap lantai hilang saat lantai itu dipilih, supaya isi ruangan terlihat.
 
 ## Efek
 

@@ -60,7 +60,7 @@ export function levelFor(state, agentId) {
 
 const ERR = {
   not_logged_in: 'Sesi login habis. Silakan login ulang.',
-  not_staff: 'Akun ini belum terdaftar sebagai staff Kyuka Ramen Virtual.',
+  not_staff: 'Akun ini belum terdaftar sebagai staff KYUMEN Holding.',
   no_access: 'Kamu belum punya akses ke agent ini. Minta owner mengaturnya di halaman Akses agent.',
   unknown_agent: 'Agent ini belum aktif.',
   empty_message: 'Tulis pesan dulu.',

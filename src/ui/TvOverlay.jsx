@@ -137,8 +137,8 @@ export function TvOverlay() {
         <div className="tv-brand">
           <img className="brand-logo" src={`${import.meta.env.BASE_URL}logo.png`} alt="" width="40" height="40" aria-hidden="true" />
           <div>
-            <b>Kyuka Ramen</b>
-            <span>{real ? 'Kantor virtual · mode real' : 'Kantor virtual · simulasi'}</span>
+            <b>KYUMEN Holding</b>
+            <span>{real ? 'Kyuka Ramen · mode real' : 'Kyuka Ramen · simulasi'}</span>
           </div>
         </div>
         <TvClock />

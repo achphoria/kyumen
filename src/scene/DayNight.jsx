@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame, useThree } from '@react-three/fiber';
 import { Sparkles } from '@react-three/drei';
-import { ROOM_LIST, sunElevation, tierY } from '../data/hive';
+import { ROOM_LIST, sunElevation, tierY, TOP_TIER } from '../data/hive';
 import { world } from '../sim/engine';
 import { useHive } from '../sim/store';
 import { sound } from '../audio/sound';
@@ -123,20 +123,21 @@ export function DayNight() {
         intensity={1.7}
         color="#FFE6B0"
         castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-camera-left={-32}
-        shadow-camera-right={32}
-        shadow-camera-top={32}
-        shadow-camera-bottom={-32}
+        shadow-mapSize={[2048, 2048]}
+        shadow-camera-left={-42}
+        shadow-camera-right={42}
+        shadow-camera-top={42}
+        shadow-camera-bottom={-42}
         shadow-camera-near={1}
-        shadow-camera-far={140}
+        shadow-camera-far={170}
         shadow-bias={-0.0006}
       />
       {/* lampu tiap lantai, selalu terpasang supaya shader tidak dikompilasi ulang */}
-      {[0, 1, 2].map((t) => (
-        <pointLight key={t} ref={(el) => (lights.current[t] = el)} position={[0, tierY(t) + 2.2, 0]} color="#FFB37A" intensity={0} distance={30} decay={1} />
+      {Array.from({ length: TOP_TIER + 1 }, (_, t) => (
+        <pointLight key={t} ref={(el) => (lights.current[t] = el)} position={[0, tierY(t) + 2.2, 2]} color="#FFB37A" intensity={0} distance={30} decay={1} />
       ))}
-      <pointLight ref={lampLight} position={[0, 0.5, 15]} color="#FF9A6B" intensity={0} distance={14} decay={2} />
+      {/* lampion selasar Lantai 1 & tangga tamu */}
+      <pointLight ref={lampLight} position={[-12, 1.5, 9]} color="#FF9A6B" intensity={0} distance={16} decay={2} />
       <points geometry={starGeo}>
         <pointsMaterial ref={starMat} color="#FFF8E7" size={1.4} sizeAttenuation transparent opacity={0} depthWrite={false} fog={false} />
       </points>
@@ -145,10 +146,10 @@ export function DayNight() {
         <meshBasicMaterial color="#FFF3C4" fog={false} />
       </mesh>
       <group ref={dust}>
-        <Sparkles count={70} scale={[54, 28, 54]} position={[0, 9, 0]} size={5} color="#9CC8FF" speed={0.35} opacity={0.8} />
+        <Sparkles count={70} scale={[54, 40, 40]} position={[0, 14, 4]} size={5} color="#9CC8FF" speed={0.35} opacity={0.8} />
       </group>
       <group ref={flies} visible={false}>
-        <Sparkles count={90} scale={[60, 16, 60]} position={[0, 2, 0]} size={7} color="#E8FF8A" speed={0.5} />
+        <Sparkles count={90} scale={[56, 40, 30]} position={[0, 14, 8]} size={7} color="#E8FF8A" speed={0.5} />
       </group>
     </>
   );

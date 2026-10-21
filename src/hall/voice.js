@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 
 const ERR = {
   not_logged_in: 'Sesi login habis. Silakan login ulang.',
-  not_staff: 'Akun ini belum terdaftar sebagai staff Kyuka Ramen Virtual.',
+  not_staff: 'Akun ini belum terdaftar sebagai staff KYUMEN Holding.',
   viewer_cannot_join: 'Akun viewer tidak bisa ikut meeting suara.',
   livekit_not_configured: 'Server suara belum dikonfigurasi.',
 };

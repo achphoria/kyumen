@@ -1,14 +1,14 @@
-// Staff manusia yang berjalan-jalan di dermaga depan kedai (outdoor), sesekali berjoget.
+// Staff manusia yang berjalan-jalan di puncak tebing KYUMEN Holding (outdoor), sesekali berjoget.
 import * as THREE from 'three';
 import { DEFAULT_POSE, POSE_ALIAS } from '../data/staff';
 
-const GROUND_Y = -2.2;
+const GROUND_Y = 28.75; // puncak tebing (PLATEAU_Y)
 const WALK = 1.7;
-// area jalan: plaza dermaga di depan kedai (di luar gedung, menara, dan tangga Genkan)
-const X_MIN = -25;
-const X_MAX = 32;
-const Z_MIN = 14.5;
-const Z_MAX = 23;
+// area jalan: pelataran puncak di belakang paviliun Ryu (di luar deret torii & kuil kecil)
+const X_MIN = -18;
+const X_MAX = 18;
+const Z_MIN = -24;
+const Z_MAX = -8;
 
 export const outdoor = { walkers: [], byId: {} };
 
@@ -17,7 +17,7 @@ function pointNear(from) {
   const cx = from ? from.x : X_MIN + Math.random() * (X_MAX - X_MIN);
   let x = Math.max(X_MIN, Math.min(X_MAX, cx + (Math.random() - 0.5) * 14));
   const z = Z_MIN + Math.random() * (Z_MAX - Z_MIN);
-  if (Math.abs(x) < 3.2 && z < 15.5) x = x < 0 ? -3.8 : 3.8; // jangan berdiri di kaki tangga Genkan
+  if (Math.abs(x + 6) < 2 && z < -8.5) x = x < -6 ? -8.6 : -3.4; // jangan berdiri di jalur torii
   return new THREE.Vector3(x, GROUND_Y, z);
 }
 

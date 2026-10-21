@@ -10,7 +10,7 @@ export const useAi = create(() => ({ status: 'unknown', model: '', busy: 0 }));
 
 const ERR = {
   not_logged_in: 'Sesi login habis. Silakan login ulang.',
-  not_staff: 'Akun ini belum terdaftar sebagai staff Kyuka Ramen Virtual.',
+  not_staff: 'Akun ini belum terdaftar sebagai staff KYUMEN Holding.',
   ai_not_configured: 'Ryu belum tersambung ke AI: kunci API Anthropic belum dipasang di Supabase.',
   ai_key_invalid: 'Kunci API Anthropic ditolak. Periksa ANTHROPIC_API_KEY di Supabase.',
   ai_busy: 'Ryu sedang sibuk (batas permintaan). Coba lagi sebentar lagi.',
