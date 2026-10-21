@@ -6,7 +6,7 @@ import { AGENTS, AGENT_BY_ID, DEPTS, DEPT_ORDER as ALL_DEPTS } from '../data/hiv
 import { useHive } from '../sim/store';
 import { useAuth } from '../sim/auth';
 import { supabase } from '../lib/supabase';
-import { useAi } from '../hall/queenBea';
+import { useAi, modelLabel } from '../hall/queenBea';
 import { speak, stopSpeaking } from '../hall/ai';
 import {
   useAgentNet,
@@ -19,7 +19,6 @@ import {
   createAgentTask,
   createHumanTask,
   uploadFiles,
-  openFile,
   fileProblem,
   FILE_ACCEPT,
   MAX_FILES,
@@ -35,13 +34,34 @@ import {
 } from '../hall/agentApi';
 import { RateButtons, ScoreBadge, SkillPanel, RoutinePanel } from './AgentTraining';
 import { useConversation } from './useConversation';
+import { confirmDialog, promptDialog } from './dialog';
+import { FileViewer, ImageThumbs } from './FileViewer';
 import { go } from './nav';
+import { imageUrlsIn, stripMachineBlocks } from '../../supabase/functions/_shared/taskProtocol.js';
 
 const DEPT_ORDER = ALL_DEPTS;
 const LEVEL_LABEL = { owner: 'Owner · akses penuh', train: 'Pelatih', use: 'Pakai' };
-const COL_LABEL = { todo: 'Belum', doing: 'Jalan', done: 'Selesai' };
+const COL_LABEL = { todo: 'Belum', doing: 'Jalan', done: 'Selesai', failed: 'Gagal' };
+const BUSY_MS = 30 * 60 * 1000;
 const SpeechRec = typeof window !== 'undefined' ? window.SpeechRecognition || window.webkitSpeechRecognition : null;
 const VOICE_KEY = 'hc-aw-voice';
+// percakapan terakhir per agent, supaya setelah refresh langsung terbuka lagi
+const LAST_KEY = 'hc-aw-last-thread:';
+function lastThread(agent) {
+  try {
+    return localStorage.getItem(LAST_KEY + agent);
+  } catch {
+    return null;
+  }
+}
+function rememberThread(agent, id) {
+  try {
+    if (id) localStorage.setItem(LAST_KEY + agent, id);
+    else localStorage.removeItem(LAST_KEY + agent);
+  } catch {
+    /* penyimpanan browser tidak tersedia */
+  }
+}
 const WAIT_POLL_MS = 5000;
 const WAIT_MAX_MS = 3 * 60 * 1000;
 // sudah ada balasan (agent/sistem) setelah pesan user terakhir?
@@ -57,8 +77,8 @@ const timeLabel = (iso) => {
 };
 const fmtSize = (b) => (b > 1e6 ? `${(b / 1e6).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1e3))} KB`);
 const extOf = (name) => (name.split('.').pop() || 'file').slice(0, 4).toUpperCase();
-// blok delegasi di akhir jawaban (bila ada) tidak ditampilkan
-const visible = (s) => String(s || '').replace(/\n?\s*\[\[DELEGATE\]\][\s\S]*$/, '').trim();
+// blok mesin ([[DELEGATE]] dll.) di akhir jawaban tidak ditampilkan
+const visible = (s) => stripMachineBlocks(s);
 const threadParam = () => new URLSearchParams(window.location.hash.split('?')[1] || '').get('thread');
 // teks polos untuk dibacakan / disalin
 const plain = (s) =>
@@ -187,7 +207,36 @@ function FileChips({ files, onRemove, onOpen }) {
 }
 
 // Jadikan tugas: dikerjakan agent otomatis (lewat n8n) atau tugas untuk diri sendiri
-function TaskForm({ agent, nick, message, ask, onDone, onCancel }) {
+function ResultView({ text, files, onOpen }) {
+  const urls = imageUrlsIn(text || '');
+  const stored = (files || []).filter((f) => f && (f.path || f.url));
+  const extra = stored.filter((f) => f.url && !urls.includes(f.url));
+  return (
+    <>
+      {text ? <Rich text={visible(text)} /> : null}
+      {urls.map((url) => (
+        <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+          <img className="aw-result-img" src={url} alt="" />
+        </a>
+      ))}
+      {extra.map((f) =>
+        String(f.type || '').startsWith('image/') || /\.(png|jpe?g|webp|gif|svg)(\?|$)/i.test(f.url) ? (
+          <a key={f.url} href={f.url} target="_blank" rel="noopener noreferrer">
+            <img className="aw-result-img" src={f.url} alt={f.name || ''} />
+          </a>
+        ) : (
+          <a key={f.url} href={f.url} target="_blank" rel="noopener noreferrer">
+            {f.name || 'Lampiran'}
+          </a>
+        ),
+      )}
+      <ImageThumbs files={stored.filter((f) => f.path)} onOpen={onOpen} />
+      <FileChips files={stored.filter((f) => f.path)} onOpen={(f) => f.path && onOpen?.(f)} />
+    </>
+  );
+}
+
+function TaskForm({ agent, nick, message, ask, threadId, onDone, onCancel }) {
   const canAgent = agent !== 'ceo';
   const [title, setTitle] = useState(oneLine(ask || message.content, 100));
   const [forAgent, setForAgent] = useState(canAgent);
@@ -201,7 +250,7 @@ function TaskForm({ agent, nick, message, ask, onDone, onCancel }) {
     try {
       if (forAgent) {
         const detail = `${ask ? `Permintaan awal: ${ask}\n\n` : ''}Jawaban/rencana sebelumnya dari ${nick}:\n${message.content}`;
-        await createAgentTask({ agent, title: t, detail: detail.slice(0, 6000) });
+        await createAgentTask({ agent, title: t, detail: detail.slice(0, 6000), threadId });
       } else {
         await createHumanTask(t);
       }
@@ -220,7 +269,7 @@ function TaskForm({ agent, nick, message, ask, onDone, onCancel }) {
       <div className="aw-seg">
         {canAgent && (
           <button className={forAgent ? 'on' : ''} onClick={() => setForAgent(true)}>
-            🐝 {nick} kerjakan otomatis
+            🐉 {nick} kerjakan otomatis
           </button>
         )}
         <button className={!forAgent ? 'on' : ''} onClick={() => setForAgent(false)}>
@@ -264,6 +313,7 @@ export function AgentWorkspace({ agentId }) {
   const [results, setResults] = useState([]);
   const [taskFor, setTaskFor] = useState(null);
   const [speaking, setSpeaking] = useState(null);
+  const [viewer, setViewer] = useState(null); // lampiran yang sedang dibuka
   const [voiceOn, setVoiceOn] = useState(loadVoicePref);
   const [listening, setListening] = useState(false);
   const [myFb, setMyFb] = useState({});
@@ -295,7 +345,11 @@ export function AgentWorkspace({ agentId }) {
     setError('');
     setTaskFor(null);
     setFiles([]);
-    loadThreads(agent).then(setThreads);
+    loadThreads(agent).then((list) => {
+      setThreads(list);
+      const last = lastThread(agent);
+      if (!threadParam() && last && list.some((t) => t.id === last)) setThreadId((cur) => cur || last);
+    });
     loadResults(agent).then(setResults);
     if (threadParam()) setThreadId(threadParam());
     if (agent !== 'ceo')
@@ -307,6 +361,11 @@ export function AgentWorkspace({ agentId }) {
         .then(({ data }) => setPrompt(data?.system_prompt || ''));
     else setPrompt('');
   }, [agent, account]);
+
+  const openThread = (id) => {
+    setThreadId(id);
+    rememberThread(agent, id);
+  };
 
   // pindah percakapan lewat ?thread= tanpa ganti agent
   useEffect(() => {
@@ -414,8 +473,14 @@ export function AgentWorkspace({ agentId }) {
     [],
   );
 
-  const tasks = useMemo(() => planTasks.filter((t) => t.kind === 'ai' && t.who === agent).slice(-12).reverse(), [planTasks, agent]);
-  const pres = presence(agent);
+  const mine = useMemo(
+    () => planTasks.filter((t) => t.kind === 'ai' && (t.who === agent || String(t.who || '').toLowerCase() === def.nick.toLowerCase())),
+    [planTasks, agent, def.nick],
+  );
+  const busyTask = mine.find((t) => t.col === 'doing' && (!t.updatedAt || Date.now() - Date.parse(t.updatedAt) < BUSY_MS));
+  const tasks = useMemo(() => [...mine].reverse().slice(0, 12), [mine]);
+  const locked = !!(busyTask && busyTask.createdBy !== uid);
+  const pres = busyTask ? 'work' : presence(agent);
   const thread = threads.find((t) => t.id === threadId);
   const readOnly = thread && thread.user_id !== uid; // owner membaca percakapan staff lain
   const canTask = account && account.role !== 'viewer';
@@ -502,7 +567,7 @@ export function AgentWorkspace({ agentId }) {
         speak(plain(r.reply), () => setSpeaking((s) => (s === 'last' ? null : s)));
       }
       if (!threadId) {
-        setThreadId(r.thread_id);
+        openThread(r.thread_id);
         loadThreads(agent).then(setThreads);
       } else {
         setMsgs(await loadMessages(r.thread_id));
@@ -519,7 +584,7 @@ export function AgentWorkspace({ agentId }) {
 
   const send = async () => {
     const m = text.trim();
-    if ((!m && !files.length) || busy || waiting) return;
+    if (locked || (!m && !files.length) || busy || waiting) return;
     recRef.current?.stop();
     const pending = files;
     setText('');
@@ -571,7 +636,7 @@ export function AgentWorkspace({ agentId }) {
     );
   }
 
-  const model = GROK_AGENTS.includes(agent) ? 'Grok Bot' : agent === 'ceo' ? (ai.status === 'on' ? 'Claude Haiku 5.5' : 'belum tersambung') : 'Claude · n8n';
+  const model = GROK_AGENTS.includes(agent) ? 'Grok Bot' : agent === 'ceo' ? (ai.status === 'on' ? modelLabel(ai.model) : 'belum tersambung') : 'Claude · n8n';
   const canWrite = level && !readOnly;
   const avatar = (sm) => (
     <div className={`aw-av${sm ? ' sm' : ''}`} style={{ '--c': DEPTS[def.dept].color }}>
@@ -626,7 +691,7 @@ export function AgentWorkspace({ agentId }) {
                   onClick={() => {
                     setSearch('');
                     go(`/agent/${f.agent}?thread=${f.threadId}`);
-                    if (f.agent === agent) setThreadId(f.threadId);
+                    if (f.agent === agent) openThread(f.threadId);
                   }}
                 >
                   <b>
@@ -641,75 +706,85 @@ export function AgentWorkspace({ agentId }) {
               ))}
             </div>
           )}
-          <AgentList current={agent} access={access} presence={presence} onPick={(id) => go(`/agent/${id}`)} />
           {level && (
             <>
               <p className="aw-label">Percakapan</p>
-              <button className={`aw-thread new${threadId ? '' : ' on'}`} onClick={() => setThreadId(null) || setMsgs([])}>
+              <button
+                className={`aw-thread new${threadId ? '' : ' on'}`}
+                onClick={() => {
+                  openThread(null);
+                  setMsgs([]);
+                }}
+              >
                 ＋ Percakapan baru
               </button>
-              {threads.map((t) => (
-                <div key={t.id} className={`aw-thread${t.id === threadId ? ' on' : ''}${t.pinned ? ' pinned' : ''}`}>
-                  <button onClick={() => setThreadId(t.id)}>
-                    <span>
-                      {t.pinned && '📌 '}
-                      {t.task_id && '🗂 '}
-                      {t.title}
-                    </span>
-                    <small>
-                      {timeLabel(t.updated_at)}
-                      {t.user_id !== uid && names[t.user_id] ? ` · ${names[t.user_id]}` : ''}
-                    </small>
-                  </button>
-                  {t.user_id === uid && (
-                    <span className="aw-thread-acts">
-                      <button
-                        className="aw-del"
-                        aria-label={t.pinned ? 'Lepas sematan' : 'Sematkan percakapan'}
-                        title={t.pinned ? 'Lepas sematan' : 'Sematkan'}
-                        onClick={async () => {
-                          await updateThread(t.id, { pinned: !t.pinned }).catch((e) => setError(e.message));
-                          loadThreads(agent).then(setThreads);
-                        }}
-                      >
-                        📌
-                      </button>
-                      <button
-                        className="aw-del"
-                        aria-label="Ganti judul percakapan"
-                        title="Ganti judul"
-                        onClick={async () => {
-                          const title = window.prompt('Judul percakapan', t.title);
-                          if (!title || title === t.title) return;
-                          await updateThread(t.id, { title }).catch((e) => setError(e.message));
-                          loadThreads(agent).then(setThreads);
-                        }}
-                      >
-                        ✏️
-                      </button>
-                    </span>
-                  )}
-                  {t.user_id === uid && (
-                    <button
-                      className="aw-del"
-                      aria-label="Hapus percakapan"
-                      onClick={async () => {
-                        if (!window.confirm('Hapus percakapan ini?')) return;
-                        await deleteThread(t.id);
-                        if (t.id === threadId) {
-                          setThreadId(null);
-                          setMsgs([]);
-                        }
-                        loadThreads(agent).then(setThreads);
-                      }}
-                    >
-                      ×
+              <div className="aw-threads">
+                {threads.map((t) => (
+                  <div key={t.id} className={`aw-thread${t.id === threadId ? ' on' : ''}${t.pinned ? ' pinned' : ''}`}>
+                    <button onClick={() => openThread(t.id)}>
+                      <span>
+                        {t.pinned && '📌 '}
+                        {t.task_id && '🗂 '}
+                        {t.title}
+                      </span>
+                      <small>
+                        {timeLabel(t.updated_at)}
+                        {t.user_id !== uid && names[t.user_id] ? ` · ${names[t.user_id]}` : ''}
+                      </small>
                     </button>
-                  )}
-                </div>
-              ))}
+                    {t.user_id === uid && (
+                      <span className="aw-thread-acts">
+                        <button
+                          className="aw-del"
+                          aria-label={t.pinned ? 'Lepas sematan' : 'Sematkan percakapan'}
+                          title={t.pinned ? 'Lepas sematan' : 'Sematkan'}
+                          onClick={async () => {
+                            await updateThread(t.id, { pinned: !t.pinned }).catch((e) => setError(e.message));
+                            loadThreads(agent).then(setThreads);
+                          }}
+                        >
+                          📌
+                        </button>
+                        <button
+                          className="aw-del"
+                          aria-label="Ganti judul percakapan"
+                          title="Ganti judul"
+                          onClick={async () => {
+                            const title = await promptDialog({ title: 'Ganti judul percakapan', defaultValue: t.title, maxLength: 120, placeholder: 'Judul percakapan' });
+                            if (!title || title === t.title) return;
+                            await updateThread(t.id, { title }).catch((e) => setError(e.message));
+                            loadThreads(agent).then(setThreads);
+                          }}
+                        >
+                          ✏️
+                        </button>
+                      </span>
+                    )}
+                    {t.user_id === uid && (
+                      <button
+                        className="aw-del"
+                        aria-label="Hapus percakapan"
+                        onClick={async () => {
+                          const ok = await confirmDialog({ title: 'Hapus percakapan ini?', message: `“${t.title}” beserta semua pesannya dihapus permanen.`, confirmLabel: 'Hapus', tone: 'danger' });
+                          if (!ok) return;
+                          await deleteThread(t.id);
+                          if (t.id === threadId) {
+                            openThread(null);
+                            setMsgs([]);
+                          }
+                          loadThreads(agent).then(setThreads);
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             </>
           )}
+          {level && <p className="aw-label">Agent</p>}
+          <AgentList current={agent} access={access} presence={presence} onPick={(id) => go(`/agent/${id}`)} />
         </aside>
 
         <section
@@ -735,7 +810,7 @@ export function AgentWorkspace({ agentId }) {
                 {def.role} · {DEPTS[def.dept].name}
               </span>
             </div>
-            <span className={`pres pres-${pres}`}>{PRES_LABEL[pres]}</span>
+            <span className={`pres pres-${pres}`}>{busyTask ? 'Kerja' : PRES_LABEL[pres]}</span>
             <span className="aw-model">{model}</span>
             {level && <ScoreBadge agent={agent} />}
             {level && threadId && msgs.length > 0 && (
@@ -762,6 +837,14 @@ export function AgentWorkspace({ agentId }) {
             )}
           </div>
 
+          {busyTask && agent !== 'ceo' && (
+            <div className="aw-busy">
+              {def.nick} sedang mengerjakan “{busyTask.title.replace(`${def.nick}: `, '')}”
+              {Number.isFinite(Number(busyTask.progress)) ? ` · ${Math.round(Number(busyTask.progress) * 100)}%` : ''}
+              {busyTask.progressNote ? ` · ${busyTask.progressNote}` : ''}.{' '}
+              {locked ? 'Kamu belum bisa mengirim pekerjaan baru sampai selesai.' : 'Kamu masih bisa mengobrol; tugas baru menunggu yang ini selesai.'}
+            </div>
+          )}
           {!level ? (
             <div className="aw-locked">
               <p>🔒 Kamu belum punya akses ke {def.nick}.</p>
@@ -788,8 +871,15 @@ export function AgentWorkspace({ agentId }) {
                     <div key={m.id} className={`aw-msg ${m.role}`}>
                       {m.role === 'agent' && avatar(true)}
                       <div className="aw-bub">
-                        {m.role === 'agent' ? <Rich text={visible(m.content)} /> : <p>{m.content}</p>}
-                        <FileChips files={m.meta?.files} onOpen={(f) => f.path && openFile(f.path)} />
+                        {m.role === 'agent' ? (
+                          <ResultView text={m.content} files={m.meta?.files} onOpen={setViewer} />
+                        ) : (
+                          <>
+                            <p>{m.content}</p>
+                            <ImageThumbs files={m.meta?.files} onOpen={setViewer} />
+                            <FileChips files={m.meta?.files} onOpen={(f) => (f.path ? setViewer(f) : f.url && window.open(f.url, '_blank', 'noopener'))} />
+                          </>
+                        )}
                         {m.meta?.delegated?.length > 0 && (
                           <div className="aw-deleg">
                             {m.meta.delegated.map((d, i) => (
@@ -818,7 +908,15 @@ export function AgentWorkspace({ agentId }) {
                               <RateButtons agent={agent} message={m} mine={myFb[m.id]} onRated={(v) => setMyFb((x) => ({ ...x, [m.id]: v }))} />
                             )}
                             {canWrite && <button onClick={() => keep(m)}>📌 Simpan</button>}
-                            {canWrite && canTask && <button onClick={() => setTaskFor(taskFor === m.id ? null : m.id)}>✅ Jadikan tugas</button>}
+                            {canWrite && canTask && (
+                              <button
+                                onClick={() => setTaskFor(taskFor === m.id ? null : m.id)}
+                                disabled={!!busyTask}
+                                title={busyTask ? `${def.nick} sedang mengerjakan tugas lain` : 'Jadikan tugas'}
+                              >
+                                ✅ Jadikan tugas
+                              </button>
+                            )}
                           </div>
                         )}
                         {taskFor === m.id && (
@@ -827,6 +925,7 @@ export function AgentWorkspace({ agentId }) {
                             nick={def.nick}
                             message={m}
                             ask={askBefore(m)}
+                            threadId={threadId}
                             onCancel={() => setTaskFor(null)}
                             onDone={(note) => {
                               setTaskFor(null);
@@ -923,12 +1022,15 @@ export function AgentWorkspace({ agentId }) {
                       value={text}
                       maxLength={4000}
                       placeholder={
-                        listening
+                        locked
+                          ? `${def.nick} sedang mengerjakan tugas lain…`
+                          : listening
                           ? 'Mendengarkan… bicara sekarang'
                           : pres === 'offline' && agent !== 'ceo'
                             ? `${def.nick} sedang offline${netDown ? ' (server agent mati)' : ''}…`
                             : `Beri perintah ke ${def.nick}…`
                       }
+                      disabled={locked}
                       onChange={(e) => setText(e.target.value)}
                       onPaste={(e) => {
                         if (e.clipboardData.files.length) {
@@ -958,7 +1060,7 @@ export function AgentWorkspace({ agentId }) {
                     >
                       🗣
                     </button>
-                    <button className="aw-send" onClick={send} disabled={busy || !!waiting || (!text.trim() && !files.length)} aria-label="Kirim">
+                    <button className="aw-send" onClick={send} disabled={locked || busy || !!waiting || (!text.trim() && !files.length)} aria-label="Kirim">
                       ➤
                     </button>
                   </div>
@@ -968,6 +1070,7 @@ export function AgentWorkspace({ agentId }) {
             </>
           )}
           {drag && <div className="aw-drop">Lepaskan file untuk dilampirkan</div>}
+          {viewer && <FileViewer file={viewer} onClose={() => setViewer(null)} />}
         </section>
 
         <aside className="aw-right">
@@ -995,25 +1098,44 @@ export function AgentWorkspace({ agentId }) {
             <>
               <p className="aw-label">Tugas {def.nick}</p>
               {tasks.length === 0 && <p className="muted small">Belum ada tugas. Klik ✅ Jadikan tugas di jawaban {def.nick}, atau minta Ryu mendelegasikan.</p>}
-              {tasks.map((t) => (
-                <div key={t.id} className="aw-task">
-                  <button onClick={() => setOpenItem(openItem === t.id ? null : t.id)}>
-                    <span className={`aw-col ${t.col}`}>{COL_LABEL[t.col] || t.col}</span>
-                    <b>{t.title.replace(`${def.nick}: `, '')}</b>
-                  </button>
-                  {openItem === t.id && (
-                    <div className="aw-result">
-                      {t.result ? <Rich text={t.result} /> : <p className="muted">{t.col === 'done' ? 'Hasil lengkap belum tersimpan (tugas lama).' : 'Sedang dikerjakan…'}</p>}
-                      {t.result && (
-                        <div className="aw-acts">
-                          <button onClick={() => copy(t.result)}>📋 Salin</button>
-                          <button onClick={() => download(`${slug(t.title)}.md`, `# ${t.title}\n\n${t.result}\n`)}>⬇ Unduh</button>
-                        </div>
+              {tasks.map((t) => {
+                const open = openItem === t.id;
+                const title = t.title.replace(`${def.nick}: `, '');
+                const pct = Number.isFinite(Number(t.progress)) ? Math.round(Number(t.progress) * 100) : null;
+                const linked = threads.find((th) => th.task_id === t.id) || (t.sourceThreadId ? threads.find((th) => th.id === t.sourceThreadId) : null);
+                return (
+                  <div key={t.id} className={`aw-task${open ? ' open' : ''}`}>
+                    <button onClick={() => setOpenItem(open ? null : t.id)} aria-expanded={open}>
+                      <span className={`aw-col ${t.col}`}>{COL_LABEL[t.col] || t.col}</span>
+                      <b>{title}</b>
+                      {t.col === 'doing' && (
+                        <small className="muted">
+                          {pct != null ? `${pct}%` : 'Sedang dikerjakan'}
+                          {t.progressNote ? ` · ${t.progressNote}` : ''}
+                        </small>
                       )}
-                    </div>
-                  )}
-                </div>
-              ))}
+                      {!open && t.result && <small className="aw-preview">{oneLine(visible(t.result), 140)}</small>}
+                      {!open && !t.result && t.col === 'failed' && <small className="muted">Tidak ada hasil.</small>}
+                    </button>
+                    {open && (
+                      <div className="aw-result">
+                        {t.result || (t.resultFiles || []).length ? (
+                          <ResultView text={t.result} files={t.resultFiles} onOpen={setViewer} />
+                        ) : (
+                          <p className="muted">{t.col === 'doing' ? 'Sedang dikerjakan…' : t.col === 'failed' ? 'Tugas ini gagal dan tidak punya hasil.' : 'Belum ada hasil.'}</p>
+                        )}
+                        <div className="aw-acts">
+                          {t.result && <button onClick={() => copy(t.result)}>📋 Salin</button>}
+                          {t.result && <button onClick={() => download(`${slug(t.title)}.md`, `# ${t.title}\n\n${visible(t.result)}\n`)}>⬇ Unduh</button>}
+                          {linked && (
+                            <button onClick={() => openThread(linked.id)}>Buka di chat</button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </>
           )}
 
@@ -1041,7 +1163,8 @@ export function AgentWorkspace({ agentId }) {
                           {(r.user_id === uid || access.owner) && (
                             <button
                               onClick={async () => {
-                                if (!window.confirm('Hapus hasil ini?')) return;
+                                const ok = await confirmDialog({ title: 'Hapus hasil tersimpan?', message: `“${r.title}” dihapus dari Hasil tersimpan.`, confirmLabel: 'Hapus', tone: 'danger' });
+                                if (!ok) return;
                                 await deleteResult(r.id);
                                 loadResults(agent).then(setResults);
                               }}

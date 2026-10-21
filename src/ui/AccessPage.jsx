@@ -84,7 +84,7 @@ export function AccessPage() {
       </p>
       {error && <div className="error">{error}</div>}
       {staff === null && <p className="muted">Memuat staff…</p>}
-      {staff && staff.length === 0 && <p className="muted">Belum ada staff selain owner. Undang staff dulu di halaman Undang staff.</p>}
+      {staff && staff.length === 0 && <p className="muted">Belum ada staff selain owner. Tambahkan karyawan dan kirim undangan di halaman Employee.</p>}
       <div className="acc-list">
         {staff?.map((s) => {
           const mine = access[s.id] || {};

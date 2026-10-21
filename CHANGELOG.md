@@ -1,5 +1,18 @@
 # Changelog
 
+## Tahap 5: semua fitur final Hive Colony (tanpa Grok Bot)
+
+- **🐉 Ryu ketua tim** (Claude Sonnet 5.5): permintaan kerja dipecah sendiri ke maks. 5 agent tanpa bertanya siapa yang mengerjakan; Ryu membaca hasil tugas 2 hari terakhir; begitu semua tugas paket selesai, rekap + lampiran (laporan .md, poster SVG untuk paket visual) dikirim otomatis ke percakapan.
+- **Kunci sibuk & progres**: satu agent satu tugas (lepas sendiri setelah 30 menit tanpa kabar), progres tugas tampil di papan misi & Ruang Kerja, tugas tanpa hasil ditandai gagal (bukan selesai). Tugas yang menunggu persetujuan owner ditutup setelah owner memutuskan, supaya rekap Ryu tetap keluar. Persetujuan kata kunci (iklan, pembayaran, pembelian) tetap berlaku.
+- **🛠 Workshop** (`#/workshop`): tiket kerja tim ala Agent Hub. Daftar tiket, peta tim (Ryu di tengah, 5 divisi), dan detail tiket dengan tab Rapat · Kerja · Laporan.
+- **🎥 Rapat video Cloudflare Realtime** (`#/rapat/<id>`): pra-gabung dengan pilihan perangkat, grid dengan pembicara aktif, share screen, host bisa mematikan mic & mengeluarkan peserta, chat, simulcast, transkrip + Ryu, notulen, rekaman opsional. Kalender rapat di Ruang Tatami (tiap jadwal membuka rapatnya sendiri). LiveKit tetap ada lewat flag `VIDEO_PROVIDER=livekit`.
+- **👥 Employee** (`#/employee`, owner & kepala divisi) menggantikan "Undang staff": data karyawan wajib lengkap, undangan dikirim ke email, karyawan langsung masuk lalu membuat password.
+- **Dock pintu utama** kaca krem dengan ikon kotak membulat: Ruang Tatami (torii), Ruang Kerja, Workshop, Portal saya, Employee.
+- **Dialog Kyumen** menggantikan semua popup bawaan browser (konfirmasi, peringatan, isian).
+- Ruang Kerja: percakapan terakhir terbuka lagi setelah refresh, penampil lampiran (dokumen & gambar), papan misi menahan tugas yang baru selesai ±10 menit.
+- Database: migrasi `20261021100000`–`20261022090000` (paket kerja, progres & kunci sibuk, SVG di lampiran, ruang video & kalender, rekaman, data karyawan). Edge Function baru `realtime-session` & `employee-invite`; logika bersama di `supabase/functions/_shared/`.
+- Tidak diambil: Grok Bot, Studio Pixel dengan foto AI, dan jalur bot lain (Kyumen tetap n8n + Claude).
+
 ## Tahap 4: Portal saya & Mode Intro (dari Hive Colony)
 
 - **🙋 Portal saya** (`#/saya`, tombol ketiga di kedai): kanban tugas tim + to-do pribadi, tugas saya ke agent beserta hasilnya, percakapan & hasil tersimpan, rapat & tindak lanjut untuk saya. Kartu "Portal karyawan" di Ruang Tatami dihapus.
