@@ -1,8 +1,8 @@
-import { useMemo, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Html } from '@react-three/drei';
-import { HALF, WALL_H, SEATS_BY_ROOM, DEPTS, doorSides } from '../data/hive';
+import { HALF, WALL_H, TOP_TIER, SEATS_BY_ROOM, DEPTS, doorSides } from '../data/hive';
 import { useHive } from '../sim/store';
 import { world } from '../sim/engine';
 import { M, std, Cyl, Sph } from './materials';
@@ -215,13 +215,23 @@ export function Room({ room }) {
     rim.emissiveIntensity = g * 1.6 + (hover || selected ? 0.35 : 0);
   });
 
+  // ruangan di bawah lantai lain selalu dinaungi selasar atasnya, jadi bayangan furniturnya tidak terlihat;
+  // tidak ikut digambar ke peta bayangan supaya pass bayangan jauh lebih ringan
+  const root = useRef();
+  useLayoutEffect(() => {
+    if (!root.current || room.tier >= TOP_TIER) return;
+    root.current.traverse((o) => {
+      if (o.isMesh) o.castShadow = false;
+    });
+  }, [floor, room.tier]);
+
   if (floor !== 'all' && room.tier > floor) return null;
 
   const showLabel = hover || selected || floor === room.tier;
   const Set = SETS[room.kind];
 
   return (
-    <group position={[room.x, room.y, room.z]}>
+    <group ref={root} position={[room.x, room.y, room.z]}>
       {/* lantai */}
       <mesh
         position={[0, -0.2, 0]}
